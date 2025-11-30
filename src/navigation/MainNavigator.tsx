@@ -5,6 +5,7 @@ import SplashScreen from '../screens/SplashScreen/splashScreen';
 import LoginScreen from '../screens/LoginScreen/loginScreen';
 import RegisterScreen from '../screens/RegisterScreen/registerScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen/ForgotPasswordScreen';
+import Home from '../screens/Home/home';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -15,6 +16,7 @@ const MainNavigator = () => {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="Home" component={Home} />
     </Stack.Navigator>
   );
 };

@@ -1,5 +1,4 @@
-import { API_BASE } from '@env';
-const baseUrl = API_BASE;
+const baseUrl = process.env.EXPO_PUBLIC_API_BASE;
 
 export const urlsApi = {
   user: {
