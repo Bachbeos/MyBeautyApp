@@ -13,17 +13,14 @@ export const SidebarProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const open = () => {
-    console.log('[SidebarContext] open()');
     setIsOpen(true);
   };
   const close = () => {
-    console.log('[SidebarContext] close()');
     setIsOpen(false);
   };
   const toggle = () => {
     setIsOpen((v) => {
       const next = !v;
-      console.log('[SidebarContext] toggle() =>', next);
       return next;
     });
   };

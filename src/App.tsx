@@ -4,6 +4,8 @@ import MainNavigator from './navigation/MainNavigator';
 import { ToastProvider } from 'expo-toast';
 import { SidebarProvider } from './components/Sidebar/SidebarContext';
 import SidebarDrawer from './components/Sidebar/SidebarDrawer';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
   const navigationRef = useNavigationContainerRef();
@@ -15,13 +17,16 @@ export default function App() {
   };
 
   return (
-    <ToastProvider>
-      <SidebarProvider>
-        <NavigationContainer ref={navigationRef} onReady={updateRouteName} onStateChange={updateRouteName}>
-          <MainNavigator />
-          <SidebarDrawer currentRouteName={currentRouteName} />
-        </NavigationContainer>
-      </SidebarProvider>
-    </ToastProvider>
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <ToastProvider>
+        <SidebarProvider>
+          <NavigationContainer ref={navigationRef} onReady={updateRouteName} onStateChange={updateRouteName}>
+            <MainNavigator />
+            <SidebarDrawer currentRouteName={currentRouteName} />
+          </NavigationContainer>
+        </SidebarProvider>
+      </ToastProvider>
+    </SafeAreaProvider>
   );
 }
