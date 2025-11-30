@@ -5,22 +5,29 @@ import { RootStackParamList } from '../../types/types';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../../components/Header/Header';
 
+// 1. Import hook useSidebar
+import { useSidebar } from '../../components/Sidebar/SidebarContext';
+
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const Home: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
+  // 2. Lấy hàm open từ context
+  const { open } = useSidebar();
+
   const handleLogout = () => {
-    // For testing: simply navigate back to Login screen
     navigation.replace('Login');
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header />
+      {/* 3. Truyền hàm open vào sự kiện onMenuPress */}
+      <Header onMenuPress={open} />
+
       <View style={styles.container}>
+        {/* ... nội dung cũ giữ nguyên ... */}
         <Text style={styles.title}>Welcome to MyBeautyApp</Text>
-        <Text style={styles.subtitle}>You're signed in — this is the Home screen.</Text>
 
         <TouchableOpacity style={styles.button} onPress={handleLogout}>
           <Text style={styles.buttonText}>Logout</Text>
@@ -30,6 +37,7 @@ const Home: React.FC = () => {
   );
 };
 
+// ... giữ nguyên phần styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -6,13 +6,16 @@ import { useSidebar } from './SidebarContext';
 
 const WINDOW = Dimensions.get('window');
 
-export default function SidebarDrawer() {
+type Props = {
+  currentRouteName?: string;
+};
+
+export default function SidebarDrawer({ currentRouteName }: Props) {
   const { isOpen, close } = useSidebar();
   const [visible, setVisible] = useState(isOpen);
   const anim = useRef(new Animated.Value(isOpen ? 1 : 0)).current;
 
   useEffect(() => {
-    console.log('[SidebarDrawer] isOpen ->', isOpen);
     if (isOpen) {
       setVisible(true);
       Animated.timing(anim, {
@@ -31,15 +34,6 @@ export default function SidebarDrawer() {
     }
   }, [isOpen, anim]);
 
-  useEffect(() => {
-    // debug: log animation value periodically if needed
-    const id = anim.addListener(({ value }) => {
-      // uncomment to log continuous value (can be noisy)
-      // console.log("[SidebarDrawer] anim value", value);
-    });
-    return () => anim.removeListener(id);
-  }, [anim]);
-
   if (!visible) return null;
 
   const translateX = anim.interpolate({
@@ -52,7 +46,6 @@ export default function SidebarDrawer() {
     outputRange: [0, 0.5],
   });
 
-  // Adjust for Android StatusBar translucent behaviour if needed
   const topOffset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
 
   return (
@@ -71,7 +64,7 @@ export default function SidebarDrawer() {
           },
         ]}
       >
-        <Sidebar />
+        <Sidebar currentRouteName={currentRouteName} />
       </Animated.View>
     </View>
   );
@@ -91,7 +84,6 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: '#000',
-    // overlay must be absolute to catch touches and to allow sidebar to not stretch overlay
     position: 'absolute',
     left: 0,
     top: 0,

@@ -1,24 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, LayoutAnimation, Platform, UIManager, StyleSheet, ImageSourcePropType } from 'react-native';
-import { useNavigation, useRoute, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import styles, { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from './Sidebar.styles';
-
-/**
- * Sidebar component (React Native)
- *
- * Ghi chú:
- * - Component này chuyển thể từ Sidebar web sang React Native.
- * - Dùng `useRoute()` để lấy route hiện tại và highlight item tương ứng.
- * - Dùng LayoutAnimation để animate việc mở/đóng submenu.
- * - Không giả định tồn tại thư viện icon cụ thể; bạn có thể thay bằng react-native-vector-icons nếu muốn.
- *
- * Props:
- * - logos?: { logo?: ImageSourcePropType; logoSmall?: ImageSourcePropType; logoWhite?: ImageSourcePropType }
- *
- * Sau khi thêm file, hãy:
- * - Cập nhật tên màn hình trong `routeNameToTabKey` hoặc đặt đúng screen name trong menuItems để navigation hoạt động.
- * - Đưa ảnh logo vào project và truyền vào props `logos` hoặc sửa trực tiếp require paths.
- */
 
 type Logos = {
   logo?: ImageSourcePropType;
@@ -26,16 +9,14 @@ type Logos = {
   logoWhite?: ImageSourcePropType;
 };
 
+// [QUAN TRỌNG] Thêm currentRouteName vào định nghĩa Props
 type Props = {
   logos?: Logos;
-  /**
-   * Nếu bạn muốn sidebar có thể collapse (rút gọn),
-   * có thể điều khiển collapsed từ parent bằng prop này.
-   */
   initialCollapsed?: boolean;
+  currentRouteName?: string; // <--- Dòng này sửa lỗi IntrinsicAttributes
 };
 
-export default function Sidebar({ logos, initialCollapsed = false }: Props) {
+export default function Sidebar({ logos, initialCollapsed = false, currentRouteName }: Props) {
   // enable LayoutAnimation on Android
   useEffect(() => {
     if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -44,7 +25,6 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
   }, []);
 
   const navigation = useNavigation<NavigationProp<Record<string, object | undefined>>>();
-  const route = useRoute();
 
   const [activeTab, setActiveTab] = useState<string>('');
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
@@ -53,7 +33,7 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
   });
   const [collapsed, setCollapsed] = useState<boolean>(initialCollapsed);
 
-  // Ánh xạ route.name => tabKey (tùy bạn đặt tên màn hình trong navigator)
+  // Map tên màn hình (Screen Name) sang key của Sidebar
   const routeNameToTabKey: Record<string, string> = {
     CustomersScreen: 'customers',
     BranchScreen: 'branch',
@@ -62,30 +42,24 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
     RolesPermissionsScreen: 'roles-permissions',
     ProfileSettingsScreen: 'profile-settings',
     CustomerSettingsScreen: 'customer-settings',
-    // sửa/extend nếu cần
+    Home: '',
   };
 
-  // Nếu tab là con của submenu, ánh xạ đến parent submenu key
   const submenuParent: Record<string, string | undefined> = {
     'profile-settings': 'settings_general',
     'customer-settings': 'system_settings',
   };
 
-  // Menu definition (dùng để render)
   const menuItems: Array<any> = [
     { type: 'title', label: 'Menu chính' },
-    // CRM
     { type: 'title', label: 'CRM' },
     { key: 'customers', label: 'Khách hàng', screen: 'CustomersScreen' },
     { key: 'branch', label: 'Chi nhánh', screen: 'BranchScreen' },
-    // CRM Settings
     { type: 'title', label: 'Cài đặt CRM' },
     { key: 'resources', label: 'Tài nguyên', screen: 'ResourcesScreen' },
-    // User Management
     { type: 'title', label: 'Quản lý người dùng' },
     { key: 'manager-users', label: 'Danh sách người dùng', screen: 'ManagerUsersScreen' },
     { key: 'roles-permissions', label: 'Vai trò & Phân quyền', screen: 'RolesPermissionsScreen' },
-    // Settings (submenu)
     { type: 'title', label: 'Cài đặt' },
     {
       type: 'submenu',
@@ -101,10 +75,10 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
     },
   ];
 
-  // Khi route thay đổi, cập nhật activeTab và mở parent submenu nếu cần
   useEffect(() => {
-    const currentRouteName = (route && (route as any).name) || '';
-    const currentTab = routeNameToTabKey[currentRouteName];
+    const routeName = currentRouteName || '';
+
+    const currentTab = routeNameToTabKey[routeName];
     if (currentTab) {
       setActiveTab(currentTab);
       const parent = submenuParent[currentTab];
@@ -112,11 +86,10 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
         setOpenSubmenus((prev) => ({ ...prev, [parent]: true }));
       }
     } else {
-      // nếu không khớp map, clear active
       setActiveTab('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route.name]);
+  }, [currentRouteName]);
 
   const toggleSubmenu = (key: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -131,8 +104,6 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
       setOpenSubmenus((prev) => ({ ...prev, [parent]: true }));
     }
     if (screen) {
-      // navigate to screen (nếu screen tồn tại trong navigator)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       navigation.navigate(screen);
     }
@@ -143,7 +114,6 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
     setCollapsed((c) => !c);
   };
 
-  // Helper renderers
   const renderLogo = () => {
     if (collapsed) {
       if (logos?.logoSmall) {
@@ -163,7 +133,7 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
       <View style={styles.logoContainer}>
         <View style={styles.logoWrap}>{renderLogo()}</View>
 
-        <TouchableOpacity onPress={handleToggleCollapse} style={styles.toggleBtn} accessibilityLabel="Toggle sidebar">
+        <TouchableOpacity onPress={handleToggleCollapse} style={styles.toggleBtn}>
           <Text style={styles.toggleBtnText}>{collapsed ? '»' : '«'}</Text>
         </TouchableOpacity>
       </View>
@@ -204,7 +174,6 @@ export default function Sidebar({ logos, initialCollapsed = false }: Props) {
             );
           }
 
-          // normal menu item
           return (
             <TouchableOpacity
               key={`item-${item.key}`}
