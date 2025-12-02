@@ -1,206 +1,83 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, ViewStyle } from 'react-native';
+import React from 'react';
+import { View, Text, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import styles from './Table.styles';
 import ActionsTable from './partials/Action';
 import type { TableProps, ColumnDef } from './Table.types';
 
-// Helper: Chuyển camelCase thành Title Case
-function humanize(str: string) {
-  return String(str)
-    .replace(/[_-]/g, ' ')
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/\b\w/g, (s) => s.toUpperCase());
-}
-
-// Helper: Convert giá trị thành string để hiển thị
-function stringify(value: unknown) {
-  if (value === null || value === undefined) return '';
-  if (typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-  return String(value);
-}
-
-// [MỚI] Helper: Map giá trị align ('left', 'right') sang alignItems của React Native
-const getAlignItems = (align?: 'left' | 'center' | 'right'): ViewStyle['alignItems'] => {
-  switch (align) {
-    case 'center':
-      return 'center';
-    case 'right':
-      return 'flex-end';
-    case 'left':
-    default:
-      return 'flex-start';
-  }
-};
-
-const DEFAULT_COLUMN_WIDTH = 120; // Chiều rộng mặc định nếu không set
+const COLORS = { primary: '#e41f07', textGray: '#707070' };
 
 export default function Table<T extends Record<string, unknown>>({
-  columns,
+  columns = [],
   data,
   actions,
-  selectable = false,
-  selectedRows = [],
-  onSelect,
   isLoading = false,
+  onRefresh,
+  isRefreshing = false,
 }: TableProps<T>) {
-  // 1. Tự động suy luận cột nếu không truyền props 'columns'
-  const inferredColumns: ColumnDef<T>[] = useMemo(() => {
-    if (columns && columns.length) return columns;
-    if (!data || data.length === 0) return [];
+  const renderCardItem = ({ item }: { item: T }) => {
+    // 1. Xác định Tiêu đề Card (Thường là cột thứ 2 - Name, hoặc cột đầu tiên - ID)
+    // Nếu có cột "name" hoặc "title", ưu tiên dùng nó làm Header Card
+    const titleCol = columns.find((c) => c.key === 'name' || c.title?.toLowerCase().includes('tên')) || columns[0];
+    const otherCols = columns.filter((c) => c.key !== titleCol?.key);
 
-    // Lấy key từ phần tử đầu tiên
-    const keys = Object.keys(data[0]);
-    return keys.map((k) => ({
-      key: k,
-      title: humanize(k),
-      width: DEFAULT_COLUMN_WIDTH,
-    }));
-  }, [columns, data]);
+    return (
+      <View style={styles.card}>
+        {/* --- HEADER CỦA CARD --- */}
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{titleCol?.render ? titleCol.render(item) : (item as any)[titleCol?.key || 'id']}</Text>
+          {/* Hiển thị ID nhỏ ở góc nếu có */}
+          {/* {(item as any).id && <Text style={styles.cardId}>#{(item as any).id}</Text>} */}
+        </View>
 
-  // 2. Logic Select Rows
-  const selectedIds = selectedRows.map((row) => (row as any).id);
+        {/* --- BODY CỦA CARD (Các cột còn lại) --- */}
+        <View>
+          {otherCols.map((col) => (
+            <View key={col.key} style={styles.cardRow}>
+              <Text style={styles.cardLabel}>{col.title}</Text>
+              <View style={styles.cardValue}>
+                {col.render ? col.render(item) : <Text style={styles.cardValueText}>{String((item as any)[col.dataIndex || col.key] ?? '')}</Text>}
+              </View>
+            </View>
+          ))}
+        </View>
 
-  const handleSelectAll = () => {
-    if (!onSelect) return;
-    if (selectedRows.length === data.length) {
-      onSelect([]); // Bỏ chọn hết
-    } else {
-      onSelect([...data]); // Chọn hết
-    }
+        {/* --- FOOTER CỦA CARD (ACTIONS) --- */}
+        {actions && (
+          <View style={styles.actionContainer}>
+            <ActionsTable
+              row={item}
+              onEdit={actions.onEdit}
+              onDelete={actions.onDelete}
+              onView={actions.onView}
+              onPermission={actions.onPermission}
+              extra={actions.extra}
+            />
+          </View>
+        )}
+      </View>
+    );
   };
 
-  const handleSelectRow = (row: T) => {
-    if (!onSelect) return;
-    const id = (row as any).id;
-    const isSelected = selectedIds.includes(id);
-
-    if (isSelected) {
-      onSelect(selectedRows.filter((r) => (r as any).id !== id));
-    } else {
-      onSelect([...selectedRows, row]);
-    }
-  };
-
-  const allSelected = data.length > 0 && selectedRows.length === data.length;
-  const someSelected = selectedRows.length > 0 && !allSelected;
-
-  // 3. Render
   return (
     <View style={styles.container}>
-      {/* Scroll Ngang cho nội dung bảng */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={true} contentContainerStyle={styles.scrollContainer}>
-        <View>
-          {/* --- HEADER --- */}
-          <View style={styles.headerRow}>
-            {/* Checkbox Header */}
-            {selectable && (
-              <TouchableOpacity onPress={handleSelectAll} style={styles.checkboxContainer}>
-                <MaterialCommunityIcons
-                  name={allSelected ? 'checkbox-marked' : someSelected ? 'minus-box' : 'checkbox-blank-outline'}
-                  size={22}
-                  color={allSelected || someSelected ? '#e41f07' : '#9ca3af'}
-                />
-              </TouchableOpacity>
-            )}
-
-            {/* Data Columns Header */}
-            {inferredColumns.map((col) => (
-              <View
-                key={col.key}
-                style={[
-                  styles.headerCell,
-                  {
-                    width: col.width || DEFAULT_COLUMN_WIDTH,
-                    alignItems: getAlignItems(col.align), // [SỬA] Sử dụng hàm helper
-                  },
-                ]}
-              >
-                <Text style={styles.headerText}>{col.title}</Text>
-              </View>
-            ))}
-
-            {/* Actions Header */}
-            {actions && (
-              <View style={styles.actionContainer}>
-                <Text style={styles.headerText}>{actions.label || 'Actions'}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* --- BODY --- */}
-          {isLoading ? (
-            <View style={[styles.emptyContainer, { width: '100%' }]}>
-              <ActivityIndicator size="large" color="#e41f07" />
+      <FlatList
+        data={data}
+        renderItem={renderCardItem}
+        keyExtractor={(item: any) => (item.id ? item.id.toString() : Math.random().toString())}
+        contentContainerStyle={styles.listContent}
+        refreshControl={onRefresh ? <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[COLORS.primary]} /> : undefined}
+        ListEmptyComponent={
+          !isLoading ? (
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons name="file-hidden" size={64} color={COLORS.textGray} />
+              <Text style={styles.emptyText}>Không tìm thấy dữ liệu</Text>
             </View>
-          ) : data.length === 0 ? (
-            <View style={[styles.emptyContainer, { width: '100%' }]}>
-              <MaterialCommunityIcons name="database-off" size={40} color="#d1d5db" />
-              <Text style={styles.emptyText}>No records found</Text>
-            </View>
-          ) : (
-            data.map((row, index) => {
-              const isSelected = selectedIds.includes((row as any).id);
-              return (
-                <View key={(row as any).id || index} style={[styles.row, isSelected && styles.rowSelected]}>
-                  {/* Checkbox Row */}
-                  {selectable && (
-                    <TouchableOpacity onPress={() => handleSelectRow(row)} style={styles.checkboxContainer}>
-                      <MaterialCommunityIcons
-                        name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                        size={22}
-                        color={isSelected ? '#e41f07' : '#9ca3af'}
-                      />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Data Columns Row */}
-                  {inferredColumns.map((col) => {
-                    const value = (row as any)[col.key];
-                    return (
-                      <View
-                        key={col.key}
-                        style={[
-                          styles.cell,
-                          {
-                            width: col.width || DEFAULT_COLUMN_WIDTH,
-                            alignItems: getAlignItems(col.align), // [SỬA] Sử dụng hàm helper
-                          },
-                        ]}
-                      >
-                        {col.render ? (
-                          col.render(row, value, index)
-                        ) : (
-                          <Text style={styles.cellText} numberOfLines={1}>
-                            {stringify(value)}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  })}
-
-                  {/* Actions Row */}
-                  {actions && (
-                    <View style={styles.actionContainer}>
-                      <ActionsTable
-                        row={row}
-                        onEdit={actions.onEdit}
-                        onDelete={actions.onDelete}
-                        onView={actions.onView}
-                        onPermission={actions.onPermission}
-                        extra={actions.extra}
-                      />
-                    </View>
-                  )}
-                </View>
-              );
-            })
-          )}
-        </View>
-      </ScrollView>
+          ) : null
+        }
+        ListFooterComponent={isLoading && !isRefreshing ? <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} /> : null}
+      />
     </View>
   );
 }

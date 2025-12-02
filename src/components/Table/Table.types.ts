@@ -3,11 +3,10 @@ import React from 'react';
 export type ColumnDef<T = Record<string, unknown>> = {
   key: string;
   title?: string;
-  // render trả về ReactNode để hiển thị custom view (ví dụ: Badge, Image)
-  render?: (row: T, value: unknown, index: number) => React.ReactNode;
-  width?: number; // Thêm width để set chiều rộng cột trên mobile
+  dataIndex?: string; // Hỗ trợ lấy field con
+  render?: (record: T) => React.ReactNode; // Simplification cho mobile
+  width?: number;
   align?: 'left' | 'center' | 'right';
-  sortable?: boolean;
 };
 
 export type TableActionProps<T = Record<string, unknown>> = {
@@ -22,9 +21,12 @@ export type TableActionProps<T = Record<string, unknown>> = {
 export type TableProps<T = Record<string, unknown>> = {
   columns?: ColumnDef<T>[];
   data: T[];
-  selectable?: boolean;
+  selectable?: boolean; // Mobile ít dùng select multi, nhưng giữ lại interface
   selectedRows?: T[];
   onSelect?: (selected: T[]) => void;
   actions?: Omit<TableActionProps<T>, 'row'> & { label?: string };
   isLoading?: boolean;
+  // Props cho Mobile Pull-to-refresh
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 };

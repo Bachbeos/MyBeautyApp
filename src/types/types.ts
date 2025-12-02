@@ -5,4 +5,5 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Home: undefined;
   ResourcesScreen: undefined;
+  RolesPermissionsScreen: undefined;
 };

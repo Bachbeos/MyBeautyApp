@@ -1,104 +1,111 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 const COLORS = {
   primary: '#e41f07',
-  text: '#374151',
-  textLight: '#6b7280',
-  border: '#e5e7eb',
+  text: '#1f2020',
+  textLight: '#9ca3af',
+  border: '#f3f4f6',
   bg: '#ffffff',
-  bgGray: '#f9fafb',
+  activeShadow: '#e41f07',
 };
 
 export default StyleSheet.create({
   container: {
-    paddingVertical: 10,
-    gap: 12,
-  },
-  // --- Info Row (Showing X-Y of Z) ---
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  infoText: {
-    fontSize: 13,
-    color: COLORS.textLight,
-  },
-  bold: {
-    fontWeight: '600',
-    color: COLORS.text,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.bg,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    alignItems: 'center', // Căn giữa toàn bộ nội dung
+    gap: 16, // Khoảng cách giữa hàng nút và hàng chọn limit
   },
 
-  // --- Pagination Controls ---
+  // --- Controls Row (Nút trang) ---
   controlsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
+
   pageBtn: {
-    minWidth: 36,
-    height: 36,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    width: 40,
+    height: 40,
+    borderRadius: 20, // Hình tròn
     backgroundColor: COLORS.bg,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 1 },
+      android: { elevation: 1 },
+    }),
   },
+
   activeBtn: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
+    ...Platform.select({
+      ios: { shadowColor: COLORS.activeShadow, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 4 },
+      android: { elevation: 4 },
+    }),
   },
+
   disabledBtn: {
-    backgroundColor: COLORS.bgGray,
+    backgroundColor: '#f9fafb',
+    borderColor: '#f3f4f6',
     opacity: 0.5,
+    elevation: 0,
   },
+
   pageText: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '600',
   },
+
   activeText: {
     color: '#ffffff',
     fontWeight: '700',
   },
+
   ellipsisText: {
     color: COLORS.textLight,
-    paddingHorizontal: 4,
+    fontSize: 14,
+    paddingBottom: 8,
   },
 
-  // --- Limit Selector ---
+  // --- Limit Selector (Chips) ---
   limitContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-    gap: 8,
+    gap: 12,
   },
-  limitLabel: {
-    fontSize: 13,
-    color: COLORS.textLight,
-  },
+
   limitBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.bg,
+    borderColor: 'transparent',
   },
+
   limitBtnActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#fff1f2', // Primary subtle
+    backgroundColor: '#fff5f5',
+    borderColor: 'rgba(228, 31, 7, 0.3)',
   },
+
   limitText: {
     fontSize: 12,
-    color: COLORS.text,
+    color: COLORS.textLight,
+    fontWeight: '500',
   },
+
   limitTextActive: {
     color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
