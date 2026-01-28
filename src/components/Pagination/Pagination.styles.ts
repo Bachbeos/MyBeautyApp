@@ -11,27 +11,27 @@ const COLORS = {
 
 export default StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingVertical: 22,
     paddingHorizontal: 16,
     backgroundColor: COLORS.bg,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
-    alignItems: 'center', // Căn giữa toàn bộ nội dung
-    gap: 16, // Khoảng cách giữa hàng nút và hàng chọn limit
+    alignItems: 'center',
+    gap: 16,
   },
 
-  // --- Controls Row (Nút trang) ---
   controlsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    marginBottom: 8,
   },
 
   pageBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20, // Hình tròn
+    borderRadius: 20,
     backgroundColor: COLORS.bg,
     justifyContent: 'center',
     alignItems: 'center',
@@ -76,7 +76,6 @@ export default StyleSheet.create({
     paddingBottom: 8,
   },
 
-  // --- Limit Selector (Chips) ---
   limitContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

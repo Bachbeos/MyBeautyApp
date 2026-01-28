@@ -6,4 +6,7 @@ export type RootStackParamList = {
   Home: undefined;
   ResourcesScreen: undefined;
   RolesPermissionsScreen: undefined;
+  Permission: { roleId: number; roleName: string };
+  BranchScreen: undefined;
+  ManagerUsersScreen: undefined;
 };

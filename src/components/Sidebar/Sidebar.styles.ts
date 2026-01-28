@@ -30,7 +30,6 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
   },
 
-  // --- HEADER LOGO ---
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -71,7 +70,6 @@ export default StyleSheet.create({
     padding: 4,
   },
 
-  // --- SCROLL AREA ---
   scroll: {
     flex: 1,
   },
@@ -80,7 +78,6 @@ export default StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // --- SECTION TITLE ---
   menuTitle: {
     paddingHorizontal: 20,
     marginTop: 16,
@@ -100,7 +97,6 @@ export default StyleSheet.create({
     marginHorizontal: 16,
   },
 
-  // --- MENU ITEM (Dùng chung cho cả Cha và Con) ---
   submenuContainer: {
     marginBottom: 2,
   },
@@ -115,7 +111,6 @@ export default StyleSheet.create({
     marginBottom: 2,
   },
 
-  // [QUAN TRỌNG] Style Active (Nền hồng)
   menuItemActive: {
     backgroundColor: COLORS.primaryBgSubtle,
   },
@@ -127,7 +122,6 @@ export default StyleSheet.create({
     borderRadius: 0,
   },
 
-  // Nội dung bên trong Item
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -156,14 +150,15 @@ export default StyleSheet.create({
     fontWeight: '600',
   },
 
-  // --- SUBMENU CONTENT ---
   submenuContent: {
     overflow: 'hidden',
     marginTop: 2,
   },
   submenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
-    paddingLeft: 52,
+    paddingLeft: 36,
     paddingRight: 16,
     marginHorizontal: 10,
     borderRadius: 8,
@@ -173,6 +168,7 @@ export default StyleSheet.create({
   submenuItemActive: {
     backgroundColor: COLORS.primaryBgSubtle,
   },
+
   submenuItemText: {
     fontSize: 14,
     color: COLORS.menuItemColor,
@@ -180,5 +176,18 @@ export default StyleSheet.create({
 
   arrowIcon: {
     marginLeft: 4,
+  },
+
+  bullet: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#9ca3af',
+    marginRight: 12,
+  },
+
+  bulletActive: {
+    backgroundColor: '#e41f07',
+    transform: [{ scale: 1.2 }],
   },
 });

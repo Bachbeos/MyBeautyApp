@@ -1,23 +1,22 @@
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TableActionProps } from '../Table.types';
+import React from "react";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { TableActionProps } from "../Table.types";
 
 const COLORS = {
-  primary: '#e41f07',
-  secondary: '#ffa201',
-  success: '#1abe17',
-  info: '#2f80ed',
-  warning: '#f9b801',
-  danger: '#ef1e1e',
-  // Soft backgrounds (opacity ~0.1)
-  softInfo: 'rgba(47, 128, 237, 0.1)',
-  softDanger: 'rgba(239, 30, 30, 0.1)',
-  softWarning: 'rgba(249, 184, 1, 0.1)',
-  softEdit: 'rgba(112, 112, 112, 0.1)', // Gray soft
+  primary: "#e41f07",
+  secondary: "#ffa201",
+  success: "#1abe17",
+  info: "#2f80ed",
+  warning: "#f9b801",
+  danger: "#ef1e1e",
+  softInfo: "rgba(47, 128, 237, 0.1)",
+  softDanger: "rgba(239, 30, 30, 0.1)",
+  softWarning: "rgba(249, 184, 1, 0.1)",
+  softEdit: "rgba(112, 112, 112, 0.1)",
 };
 
-export default function ActionsTable<T extends Record<string, unknown>>({ row, onEdit, onDelete, onView, onPermission, extra }: TableActionProps<T>) {
+export default function ActionsTable<T>({ row, onEdit, onDelete, onView, onPermission, extra }: TableActionProps<T>) {
   return (
     <View style={styles.container}>
       {onView && (
@@ -51,14 +50,14 @@ export default function ActionsTable<T extends Record<string, unknown>>({ row, o
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   btn: {
     width: 36,
     height: 36,
-    borderRadius: 8, // Rounded corners like web
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -1,13 +1,13 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from "react-native";
 
 const COLORS = {
-  primary: '#e41f07',
-  secondary: '#ffa201',
-  bgBody: '#f7f8f9',
-  white: '#ffffff',
-  text: '#1f2020',
-  textGray: '#707070',
-  border: '#e8e8e8',
+  primary: "#e41f07",
+  secondary: "#ffa201",
+  bgBody: "#f7f8f9",
+  white: "#ffffff",
+  text: "#1f2020",
+  textGray: "#707070",
+  border: "#e8e8e8",
 };
 
 export default StyleSheet.create({
@@ -17,9 +17,8 @@ export default StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 80, // Chừa chỗ cho FAB hoặc footer
+    paddingBottom: 80,
   },
-  // --- CARD STYLE (Thay vì Table Row) ---
   card: {
     backgroundColor: COLORS.white,
     borderRadius: 10,
@@ -27,17 +26,16 @@ export default StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
-    // Shadow giống style.css: --crms-box-shadow-sm
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 3, // Android shadow
+    elevation: 3,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
@@ -45,50 +43,43 @@ export default StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.text,
   },
-  cardId: {
-    fontSize: 12,
-    color: COLORS.textGray,
-  },
-  // --- ROW INSIDE CARD ---
   cardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   cardLabel: {
     fontSize: 14,
     color: COLORS.textGray,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   cardValue: {
     flex: 1,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   cardValueText: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
-    textAlign: 'right',
+    fontWeight: "500",
+    textAlign: "right",
   },
-  // --- ACTIONS ---
   actionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     gap: 10,
   },
-  // --- EMPTY STATE ---
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 40,
   },
   emptyText: {

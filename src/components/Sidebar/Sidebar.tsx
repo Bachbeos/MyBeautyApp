@@ -6,6 +6,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSidebar } from './SidebarContext';
 import styles from './Sidebar.styles';
 
+// Kích hoạt LayoutAnimation trên Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 type Logos = {
   logo?: ImageSourcePropType;
   logoSmall?: ImageSourcePropType;
@@ -28,38 +33,32 @@ type MenuItem = {
 };
 
 export default function Sidebar({ logos, initialCollapsed = false, currentRouteName }: Props) {
-  useEffect(() => {
-    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-      UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
-  }, []);
-
   const navigation = useNavigation<NavigationProp<Record<string, object | undefined>>>();
   const [activeTab, setActiveTab] = useState<string>('');
   const [collapsed, setCollapsed] = useState<boolean>(initialCollapsed);
   const { close } = useSidebar();
+
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
+    application: false,
     report: false,
-    membership: false,
     settings_general: false,
     system_settings: false,
+    membership: false,
   });
 
   const routeNameToTabKey: Record<string, string> = {
+    CallHistoryScreen: 'call-history',
+    CalendarScreen: 'calendar',
+    PointHistoryScreen: 'point-history',
     CustomersScreen: 'customers',
+    CustomerSourceScreen: 'customerSource',
     BranchScreen: 'branch',
-    PaymentScreen: 'payment',
     InvoiceScreen: 'invoice',
-    DealScreen: 'deal',
-    ActivitiesScreen: 'activities',
-    TaskScreen: 'task',
-    CampaignScreen: 'campaign',
-    ContractScreen: 'contract',
-    EstimationScreen: 'estimation',
-    LeadScreen: 'lead',
-    PipelineScreen: 'pipeline',
-    ProjectScreen: 'project',
-    ProposalScreen: 'proposal',
+    VoucherScreen: 'voucher',
+    UnitScreen: 'unit',
+    CategoryScreen: 'category',
+    ProductScreen: 'product',
+    ServiceScreen: 'service',
     LeadReportScreen: 'lead-reports',
     DealReportScreen: 'deal-reports',
     ContactReportScreen: 'contact-reports',
@@ -67,22 +66,21 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
     ProjectReportScreen: 'project-reports',
     TaskReportScreen: 'task-reports',
     ResourcesScreen: 'resources',
-    LostReasonScreen: 'lost-reason',
-    ContactStageScreen: 'contact-stage',
-    IndustryScreen: 'industry',
     ManagerUsersScreen: 'manager-users',
     RolesPermissionsScreen: 'roles-permissions',
-    MembershipPlansScreen: 'membership-plans',
-    MembershipAddonsScreen: 'membership-addons',
-    MembershipTransactionsScreen: 'membership-transactions',
     ProfileSettingsScreen: 'profile-settings',
     SecuritySettingsScreen: 'security-settings',
     NotificationsSettingsScreen: 'notifications-settings',
     CustomerSettingsScreen: 'customer-settings',
-    Home: 'home',
+    MembershipPlansScreen: 'membership-plans',
+    MembershipAddonsScreen: 'membership-addons',
+    MembershipTransactionsScreen: 'membership-transactions',
   };
 
   const submenuParent: Record<string, string | undefined> = {
+    'call-history': 'application',
+    calendar: 'application',
+    'point-history': 'application',
     'lead-reports': 'report',
     'deal-reports': 'report',
     'contact-reports': 'report',
@@ -100,21 +98,28 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
 
   const menuItems: MenuItem[] = [
     { type: 'title', label: 'Menu chính' },
+    {
+      type: 'submenu',
+      key: 'application',
+      label: 'Ứng dụng',
+      icon: 'apps' as any,
+      children: [
+        { key: 'call-history', label: 'Lịch sử cuộc gọi', screen: 'CallHistoryScreen' },
+        { key: 'calendar', label: 'Lịch hẹn', screen: 'CalendarScreen' },
+        { key: 'point-history', label: 'Lịch sử tích điểm', screen: 'PointHistoryScreen' },
+      ],
+    },
+
     { type: 'title', label: 'CRM' },
-    { key: 'customers', label: 'Khách hàng', screen: 'CustomersScreen', icon: 'account-group' },
+    { key: 'customers', label: 'Khách hàng', screen: 'CustomersScreen', icon: 'account-arrow-up' as any },
+    { key: 'customerSource', label: 'Nguồn khách hàng', screen: 'CustomerSourceScreen', icon: 'chart-arc' as any },
     { key: 'branch', label: 'Chi nhánh', screen: 'BranchScreen', icon: 'office-building' },
-    { key: 'payment', label: 'Thanh toán', screen: 'PaymentScreen', icon: 'cash-multiple' },
     { key: 'invoice', label: 'Hóa đơn', screen: 'InvoiceScreen', icon: 'file-document-outline' },
-    { key: 'deal', label: 'Giao dịch', screen: 'DealScreen', icon: 'medal' },
-    { key: 'activities', label: 'Hoạt động', screen: 'ActivitiesScreen', icon: 'run' },
-    { key: 'task', label: 'Công việc', screen: 'TaskScreen', icon: 'format-list-checks' },
-    { key: 'campaign', label: 'Chiến dịch', screen: 'CampaignScreen', icon: 'bullhorn' },
-    { key: 'contract', label: 'Hợp đồng', screen: 'ContractScreen', icon: 'file-check-outline' },
-    { key: 'estimation', label: 'Báo giá', screen: 'EstimationScreen', icon: 'file-chart-outline' },
-    { key: 'lead', label: 'KH Tiềm năng', screen: 'LeadScreen', icon: 'chart-arc' },
-    { key: 'pipeline', label: 'Quy trình bán', screen: 'PipelineScreen', icon: 'timeline-clock-outline' },
-    { key: 'project', label: 'Dự án', screen: 'ProjectScreen', icon: 'atom' },
-    { key: 'proposal', label: 'Đề xuất', screen: 'ProposalScreen', icon: 'file-star-outline' },
+    { key: 'voucher', label: 'Voucher', screen: 'VoucherScreen', icon: 'medal' },
+    { key: 'unit', label: 'Đơn vị', screen: 'UnitScreen', icon: 'arrow-right-circle' as any },
+    { key: 'category', label: 'Danh mục', screen: 'CategoryScreen', icon: 'tag-multiple' as any },
+    { key: 'product', label: 'Sản phẩm', screen: 'ProductScreen', icon: 'package-variant' },
+    { key: 'service', label: 'Dịch vụ', screen: 'ServiceScreen', icon: 'briefcase' },
 
     { type: 'title', label: 'Báo cáo' },
     {
@@ -122,50 +127,21 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
       key: 'report',
       label: 'Báo cáo',
       icon: 'chart-bar',
-      children: [
-        { key: 'lead-reports', label: 'BC Khách tiềm năng', screen: 'LeadReportScreen' },
-        { key: 'deal-reports', label: 'BC Giao dịch', screen: 'DealReportScreen' },
-        { key: 'contact-reports', label: 'BC Khách hàng', screen: 'ContactReportScreen' },
-        { key: 'company-reports', label: 'BC Chi nhánh', screen: 'CompanyReportScreen' },
-        { key: 'project-reports', label: 'BC Dự án', screen: 'ProjectReportScreen' },
-        { key: 'task-reports', label: 'BC Công việc', screen: 'TaskReportScreen' },
-      ],
+      children: [{ key: 'lead-reports', label: 'BC Khách hàng & DT', screen: 'LeadReportScreen' }],
     },
 
     { type: 'title', label: 'Cài đặt CRM' },
     { key: 'resources', label: 'Tài nguyên', screen: 'ResourcesScreen', icon: 'palette' },
-    { key: 'lost-reason', label: 'Lý do mất khách', screen: 'LostReasonScreen', icon: 'message-alert-outline' },
-    { key: 'contact-stage', label: 'Giai đoạn liên hệ', screen: 'ContactStageScreen', icon: 'stairs' },
-    { key: 'industry', label: 'Ngành nghề', screen: 'IndustryScreen', icon: 'factory' },
-
     { type: 'title', label: 'Quản lý người dùng' },
-    { key: 'manager-users', label: 'DS Người dùng', screen: 'ManagerUsersScreen', icon: 'account-multiple' },
-    { key: 'roles-permissions', label: 'Vai trò & Quyền', screen: 'RolesPermissionsScreen', icon: 'shield-account' },
-
-    { type: 'title', label: 'Thành viên' },
-    {
-      type: 'submenu',
-      key: 'membership',
-      label: 'Thành viên',
-      icon: 'card-account-details-outline',
-      children: [
-        { key: 'membership-plans', label: 'Gói thành viên', screen: 'MembershipPlansScreen' },
-        { key: 'membership-addons', label: 'Gói bổ sung', screen: 'MembershipAddonsScreen' },
-        { key: 'membership-transactions', label: 'Giao dịch', screen: 'MembershipTransactionsScreen' },
-      ],
-    },
-
+    { key: 'manager-users', label: 'Tài khoản người dùng', screen: 'ManagerUsersScreen', icon: 'account-multiple' },
+    { key: 'roles-permissions', label: 'Vai trò & Phân quyền', screen: 'RolesPermissionsScreen', icon: 'shield-account' },
     { type: 'title', label: 'Cài đặt' },
     {
       type: 'submenu',
       key: 'settings_general',
       label: 'Cài đặt chung',
       icon: 'cog',
-      children: [
-        { key: 'profile-settings', label: 'Hồ sơ', screen: 'ProfileSettingsScreen' },
-        { key: 'security-settings', label: 'Bảo mật', screen: 'SecuritySettingsScreen' },
-        { key: 'notifications-settings', label: 'Thông báo', screen: 'NotificationsSettingsScreen' },
-      ],
+      children: [{ key: 'profile-settings', label: 'Hồ sơ', screen: 'ProfileSettingsScreen' }],
     },
     {
       type: 'submenu',
@@ -179,6 +155,7 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
   useEffect(() => {
     const routeName = currentRouteName || '';
     const currentTab = routeNameToTabKey[routeName];
+
     if (currentTab) {
       setActiveTab(currentTab);
       const parent = submenuParent[currentTab];
@@ -186,13 +163,13 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
         setOpenSubmenus((prev) => ({ ...prev, [parent]: true }));
       }
     } else {
-      setActiveTab('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRouteName]);
 
   const toggleSubmenu = (key: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
     if (collapsed) {
       setCollapsed(false);
       setTimeout(() => {
@@ -210,10 +187,9 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setOpenSubmenus((prev) => ({ ...prev, [parent]: true }));
     }
-    if (screen && navigation?.navigate) {
-      // @ts-ignore
+
+    if (screen && navigation) {
       navigation.navigate(screen);
-      // close();
     }
   };
 
@@ -235,7 +211,6 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
             <MaterialCommunityIcons name="close" size={24} color="#6b7280" />
           </TouchableOpacity>
         </View>
-
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {menuItems.map((item, index) => {
             if (item.type === 'title') {
@@ -251,7 +226,7 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
 
             if (item.type === 'submenu') {
               const isOpen = !!openSubmenus[itemKey];
-              const hasActiveChild = item.children?.some((child: any) => child.key === activeTab);
+              const hasActiveChild = item.children?.some((child) => child.key === activeTab);
               const isParentActive = (hasActiveChild || isOpen) && !collapsed;
 
               return (
@@ -288,6 +263,8 @@ export default function Sidebar({ logos, initialCollapsed = false, currentRouteN
                             onPress={() => child.key && handleTabPress(child.key, child.screen)}
                             style={[styles.submenuItem, isChildActive && styles.submenuItemActive]}
                           >
+                            <View style={[styles.bullet, isChildActive && styles.bulletActive]} />
+
                             <Text style={[styles.submenuItemText, isChildActive && styles.textActive]}>{child.label}</Text>
                           </TouchableOpacity>
                         );

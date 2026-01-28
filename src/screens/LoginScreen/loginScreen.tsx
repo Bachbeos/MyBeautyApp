@@ -11,6 +11,7 @@ import LogoApp from '../../../assets/splash/logoApp.svg';
 import LogoGoogle from '../../../assets/images/logo_google.svg';
 import { IUserLoginRequest } from '../../model/user/UserRequestModel';
 import UserService from '../../services/UserService';
+import PermissionService from '../../services/PermissionService';
 import { useToast } from 'expo-toast';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -33,9 +34,41 @@ const LoginScreen = () => {
   const handleLoginSuccess = async (token: string) => {
     try {
       await SecureStore.setItemAsync('token', token);
-    } catch (e) {}
+      const response = await PermissionService.resources(token);
+
+      if (response && Array.isArray(response.result)) {
+        const map: Record<string, string> = {};
+        response.result.forEach((item: any) => {
+          const code = item.code;
+          let actions = item.actions;
+
+          if (typeof actions === 'string' && actions.trim().startsWith('[') && actions.trim().endsWith(']')) {
+            try {
+              const parsed = JSON.parse(actions);
+              if (Array.isArray(parsed)) actions = parsed;
+            } catch (e) {
+              console.error('Lỗi parse action:', e);
+            }
+          }
+
+          if (code && Array.isArray(actions)) {
+            actions.forEach((act: string) => {
+              const key = `${code}_${act}`;
+              map[key] = '1';
+            });
+          }
+        });
+
+        const savePromises = Object.keys(map).map((k) => SecureStore.setItemAsync(k, map[k]));
+        await Promise.all(savePromises);
+      } else {
+      }
+    } catch (e) {
+      console.error('Lỗi trong quá trình xử lý sau đăng nhập:', e);
+    }
+
     toast.show('Đăng nhập thành công!');
-    navigation.replace('Home');
+    navigation.replace('RolesPermissionsScreen');
   };
 
   const handleSubmit = async () => {
@@ -70,16 +103,13 @@ const LoginScreen = () => {
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Logo */}
         <LogoApp width={140} height={24} style={styles.logo} />
 
-        {/* Title */}
         <View style={styles.header}>
           <Text style={styles.title}>Đăng nhập</Text>
           <Text style={styles.subtitle}>Truy cập hệ thống CRMS bằng số điện thoại và mật khẩu của bạn.</Text>
         </View>
 
-        {/* Số điện thoại */}
         <Input
           placeholder="Số điện thoại"
           keyboardType="phone-pad"
@@ -90,7 +120,6 @@ const LoginScreen = () => {
           containerStyle={styles.inputContainer}
         />
 
-        {/* Password */}
         <Input
           placeholder="Mật khẩu"
           secureTextEntry={!showPassword}
@@ -106,7 +135,6 @@ const LoginScreen = () => {
           containerStyle={styles.inputContainer}
         />
 
-        {/* Remember me + Forgot */}
         <View style={styles.row}>
           <CheckBox
             title="Ghi nhớ đăng nhập"
@@ -122,7 +150,6 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Sign In Button */}
         <Button
           title="Đăng nhập"
           buttonStyle={styles.primaryBtn}
@@ -132,7 +159,6 @@ const LoginScreen = () => {
           disabled={isLoading}
         />
 
-        {/* Create account */}
         <Text style={styles.signupText}>
           Mới sử dụng hệ thống của chúng tôi?{' '}
           <Text style={styles.linkPrimary} onPress={() => navigation.navigate('Register')}>
@@ -140,14 +166,12 @@ const LoginScreen = () => {
           </Text>
         </Text>
 
-        {/* OR separator */}
         <View style={styles.orContainer}>
           <Divider style={styles.line} />
           <Text style={styles.orText}>HOẶC</Text>
           <Divider style={styles.line} />
         </View>
 
-        {/* Social Buttons */}
         <View style={styles.socialRow}>
           <Button
             icon={<Icon name="facebook" type="font-awesome" color="white" />}
@@ -161,7 +185,6 @@ const LoginScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Footer */}
       <Text style={styles.footer}>© {new Date().getFullYear()} - CRMS</Text>
     </View>
   );
