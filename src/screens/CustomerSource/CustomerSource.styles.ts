@@ -30,35 +30,16 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  cellUserContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 4,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#e9ecef",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  avatarText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: COLORS.primary,
+  cellContainer: {
+    paddingVertical: 8,
   },
   cellTextBold: {
-    fontWeight: "700",
-    fontSize: 14,
+    fontWeight: "600",
+    fontSize: 15,
     color: COLORS.text,
-    marginBottom: 2,
   },
   cellText: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textGray,
   },
 
@@ -156,6 +137,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  // Footer
   modalFooter: {
     flexDirection: "row",
     justifyContent: "flex-end",

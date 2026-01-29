@@ -1,11 +1,10 @@
 import { urlsApi } from "../configs/urls";
 import { convertParamsToString } from "../utils/convertParams";
-import type { IBranchListRequest, IBranchRequest } from "../model/branch/BranchRequestModel";
+import type { ICustomerSourceListRequest, ICustomerSourceRequest } from "../model/customerSource/CustomerSourceRequestModel";
 
 export default {
-  // Lấy danh sách chi nhánh
-  list: (params: IBranchListRequest, token?: string, signal?: AbortSignal) => {
-    return fetch(`${urlsApi.branch.list}${convertParamsToString(params)}`, {
+  list: (params: ICustomerSourceListRequest, token: string, signal?: AbortSignal) => {
+    return fetch(`${urlsApi.customerSource.list}${convertParamsToString(params)}`, {
       signal,
       method: "GET",
       headers: {
@@ -15,9 +14,8 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Thêm/Cập nhật chi nhánh
-  update: (body: IBranchRequest, token: string) => {
-    return fetch(urlsApi.branch.update, {
+  update: (body: ICustomerSourceRequest, token: string) => {
+    return fetch(urlsApi.customerSource.update, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,9 +25,8 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Xóa chi nhánh
   delete: (id: number, token: string) => {
-    return fetch(`${urlsApi.branch.delete}/${id}`, {
+    return fetch(`${urlsApi.customerSource.delete}/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -38,21 +35,11 @@ export default {
   },
 
   detail: (id: number, token: string) => {
-    return fetch(`${urlsApi.branch.detail}?id=${id}`, {
+    return fetch(`${urlsApi.customerSource.detail}?id=${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-      },
-    }).then((res) => res.json());
-  },
-
-  // Cập nhật trạng thái
-  updateStatus: (id: number, status: number, token: string) => {
-    return fetch(`${urlsApi.branch.updateStatus}?id=${id}&status=${status}`, {
-      method: "POST",
-      headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
     }).then((res) => res.json());
   },

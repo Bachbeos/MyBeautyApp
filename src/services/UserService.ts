@@ -25,6 +25,29 @@ export default {
     }).then((res) => res.json());
   },
 
+  // Lấy thông tin người dùng hiện tại
+  info: (token: string) => {
+    return fetch(urlsApi.user.info, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }).then((res) => res.json());
+  },
+
+  // Câp nhật thông tin người dùng hiện tại
+  updateInfo: (body: IUserListRequest, token: string) => {
+    return fetch(urlsApi.user.info, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((res) => res.json());
+  },
+
   // Lấy danh sách người dùng
   list: (params: IUserListRequest, token: string, signal?: AbortSignal) => {
     return fetch(`${urlsApi.user.list}${convertParamsToString(params)}`, {
@@ -50,7 +73,7 @@ export default {
   },
 
   // Xoá người dùng
-  delete: (id: string, token: string) => {
+  delete: (id: number, token: string) => {
     return fetch(`${urlsApi.user.delete}?id=${id}`, {
       method: "DELETE",
       headers: {
@@ -60,7 +83,7 @@ export default {
   },
 
   // Lấy chi tiết người dùng theo ID
-  detail: (id: string, token: string) => {
+  detail: (id: number, token: string) => {
     return fetch(`${urlsApi.user.detail}?id=${id}`, {
       method: "GET",
       headers: {
@@ -70,7 +93,7 @@ export default {
   },
 
   // Cập nhật mật khẩu
-  updatePassword: (id: string, newPassword: string, token: string) => {
+  updatePassword: (id: number, newPassword: string, token: string) => {
     return fetch(urlsApi.user.updatePassword, {
       method: "PUT",
       headers: {
@@ -82,14 +105,24 @@ export default {
   },
 
   // Cập nhật trạng thái (kích hoạt / vô hiệu hoá)
-  updateStatus: (id: string, isActive: boolean, token: string) => {
-    return fetch(urlsApi.user.updateStatus, {
-      method: "PUT",
+  updateStatus: (id: number, active: number, token: string) => {
+    return fetch(`${urlsApi.user.updateStatus}?id=${id}&active=${active}`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ id, isActive }),
+    }).then((res) => res.json());
+  },
+
+  // Đăng nhập bằng Google
+  loginGoogle: (token: string) => {
+    return fetch(urlsApi.user.login, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
     }).then((res) => res.json());
   },
 };

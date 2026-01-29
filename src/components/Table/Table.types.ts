@@ -8,6 +8,8 @@ export type ColumnDef<T> = {
   render?: (record: T) => React.ReactNode;
   width?: number;
   align?: "left" | "center" | "right";
+  labelAlign?: "left" | "center" | "right";
+  hideLabel?: boolean;
 };
 
 export type TableActionProps<T> = {

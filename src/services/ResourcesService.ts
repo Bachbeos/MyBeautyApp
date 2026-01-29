@@ -1,11 +1,11 @@
 import { urlsApi } from "../configs/urls";
 import { convertParamsToString } from "../utils/convertParams";
-import type { IBranchListRequest, IBranchRequest } from "../model/branch/BranchRequestModel";
+import type { IResourceListRequest, IResourceUpdateRequest } from "../model/resources/ResourcesRequestModel";
 
 export default {
-  // Lấy danh sách chi nhánh
-  list: (params: IBranchListRequest, token?: string, signal?: AbortSignal) => {
-    return fetch(`${urlsApi.branch.list}${convertParamsToString(params)}`, {
+  // Lấy danh sách tài nguyên
+  list: (params: IResourceListRequest, token: string, signal?: AbortSignal) => {
+    return fetch(`${urlsApi.resource.list}${convertParamsToString(params)}`, {
       signal,
       method: "GET",
       headers: {
@@ -15,9 +15,9 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Thêm/Cập nhật chi nhánh
-  update: (body: IBranchRequest, token: string) => {
-    return fetch(urlsApi.branch.update, {
+  // Thêm/Cập nhật tài nguyên
+  update: (body: IResourceUpdateRequest, token: string) => {
+    return fetch(urlsApi.resource.update, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,9 +27,9 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Xóa chi nhánh
+  // Xóa tài nguyên
   delete: (id: number, token: string) => {
-    return fetch(`${urlsApi.branch.delete}/${id}`, {
+    return fetch(`${urlsApi.resource.delete}/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -37,22 +37,13 @@ export default {
     }).then((res) => res.json());
   },
 
+  // Lấy chi tiết tài nguyên theo ID
   detail: (id: number, token: string) => {
-    return fetch(`${urlsApi.branch.detail}?id=${id}`, {
+    return fetch(`${urlsApi.resource.detail}?id=${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-      },
-    }).then((res) => res.json());
-  },
-
-  // Cập nhật trạng thái
-  updateStatus: (id: number, status: number, token: string) => {
-    return fetch(`${urlsApi.branch.updateStatus}?id=${id}&status=${status}`, {
-      method: "POST",
-      headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
     }).then((res) => res.json());
   },

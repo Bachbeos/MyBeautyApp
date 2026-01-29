@@ -1,0 +1,199 @@
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Pressable,
+  Switch,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { styles, COLORS } from "../Unit.styles";
+import { IUnitItem } from "../../../model/unit/UnitResponseModel";
+import { IUnitRequest } from "../../../model/unit/UnitRequestModel";
+
+interface ModalProps {
+  shown: boolean;
+  type: "add" | "edit" | "delete" | "detail" | null;
+  item?: IUnitItem | null;
+  onClose: () => void;
+  onSubmit: (data: IUnitRequest) => Promise<void>;
+  onDelete: () => Promise<void>;
+}
+
+const ModalUnit: React.FC<ModalProps> = ({ shown, type, item, onClose, onSubmit, onDelete }) => {
+  const [name, setName] = useState("");
+  const [position, setPosition] = useState("1");
+  const [status, setStatus] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (shown) {
+      if ((type === "edit" || type === "detail") && item) {
+        setName(item.name || "");
+        setPosition(item.position ? String(item.position) : "1");
+        setStatus(item.status !== undefined ? Number(item.status) : 1);
+      } else {
+        setName("");
+        setPosition("1");
+        setStatus(1);
+      }
+    }
+  }, [shown, type, item]);
+
+  const handleSubmit = async () => {
+    if (type === "delete") {
+      setLoading(true);
+      await onDelete();
+      setLoading(false);
+      return;
+    }
+
+    if (!name.trim()) {
+      alert("Vui lòng nhập tên đơn vị (*)");
+      return;
+    }
+
+    const payload: IUnitRequest = {
+      ...(type === "edit" && item ? { id: item.id } : {}),
+      name,
+      position: Number(position) || 0,
+      status,
+    };
+
+    setLoading(true);
+    await onSubmit(payload);
+    setLoading(false);
+  };
+
+  const renderLabel = (text: string, required = false) => (
+    <Text style={styles.label}>
+      {text} {required && <Text style={{ color: COLORS.danger }}>*</Text>}
+    </Text>
+  );
+
+  const isDeleteMode = type === "delete";
+  const isDetailMode = type === "detail";
+  const isViewOnly = isDetailMode;
+
+  return (
+    <Modal animationType="fade" transparent={true} visible={shown} onRequestClose={onClose}>
+      <View style={styles.centeredView}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
+          <View style={{ flex: 1, backgroundColor: "transparent" }} />
+        </Pressable>
+
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView} pointerEvents="box-none">
+          <Pressable style={styles.modalView} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <View style={{ flex: 1, justifyContent: "center", gap: 4 }}>
+                <Text style={styles.modalTitle} numberOfLines={1}>
+                  {type === "add" ? "Thêm đơn vị" : type === "edit" ? "Cập nhật đơn vị" : isDeleteMode ? "Xóa đơn vị" : "Chi tiết"}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeIcon}>
+                <Ionicons name="close" size={24} color={COLORS.textGray} />
+              </TouchableOpacity>
+            </View>
+
+            {isDeleteMode ? (
+              <View style={styles.deleteContainer}>
+                <View
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    backgroundColor: "#fee2e2",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={32} color={COLORS.danger} />
+                </View>
+                <Text style={styles.confirmText}>
+                  Bạn có chắc muốn xóa <Text style={{ fontWeight: "bold" }}>{item?.name}</Text>?
+                </Text>
+                <Text style={styles.subText}>Hành động này không thể hoàn tác.</Text>
+              </View>
+            ) : (
+              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                <View style={styles.formGroup}>
+                  {renderLabel("Tên đơn vị", true)}
+                  <TextInput
+                    style={[styles.input, isViewOnly && styles.inputDisabled]}
+                    placeholder="Nhập tên đơn vị"
+                    placeholderTextColor={COLORS.textGray}
+                    value={name}
+                    onChangeText={setName}
+                    editable={!isViewOnly}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  {renderLabel("Thứ tự hiển thị")}
+                  <TextInput
+                    style={[styles.input, isViewOnly && styles.inputDisabled]}
+                    placeholder="1"
+                    placeholderTextColor={COLORS.textGray}
+                    value={position}
+                    onChangeText={setPosition}
+                    keyboardType="numeric"
+                    editable={!isViewOnly}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  {renderLabel("Trạng thái")}
+                  <View style={styles.switchRow}>
+                    <Text style={{ color: status === 1 ? COLORS.success : COLORS.textGray }}>
+                      {status === 1 ? "Đang hoạt động" : "Ngưng hoạt động"}
+                    </Text>
+                    <Switch
+                      value={status === 1}
+                      onValueChange={(val) => {
+                        if (!isViewOnly) setStatus(val ? 1 : 0);
+                      }}
+                      trackColor={{ false: "#767577", true: COLORS.primary }}
+                      thumbColor={COLORS.white}
+                      disabled={isViewOnly}
+                    />
+                  </View>
+                </View>
+
+                <View style={{ height: 20 }} />
+              </ScrollView>
+            )}
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={[styles.button, styles.buttonClose]} onPress={onClose}>
+                <Text style={[styles.textStyle, { color: COLORS.text }]}>{isDetailMode ? "Đóng" : "Hủy"}</Text>
+              </TouchableOpacity>
+              {!isDetailMode && (
+                <TouchableOpacity
+                  style={[styles.button, isDeleteMode ? styles.buttonDelete : styles.buttonSave]}
+                  onPress={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={COLORS.white} size="small" />
+                  ) : (
+                    <Text style={styles.textStyle}>{isDeleteMode ? "Xóa ngay" : type === "add" ? "Tạo mới" : "Lưu thay đổi"}</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
+  );
+};
+
+export default ModalUnit;

@@ -28,14 +28,26 @@ export default function Table<T extends object>({
         </View>
 
         <View>
-          {otherCols.map((col) => (
-            <View key={col.key} style={styles.cardRow}>
-              <Text style={styles.cardLabel}>{col.title}</Text>
-              <View style={styles.cardValue}>
-                {col.render ? col.render(item) : <Text style={styles.cardValueText}>{String((item as any)[col.dataIndex || col.key] ?? "")}</Text>}
+          {otherCols.map((col) => {
+            const valueAlignItems = col.align === "left" ? "flex-start" : col.align === "center" ? "center" : "flex-end";
+            const valueTextAlign = col.align === "left" ? "left" : col.align === "center" ? "center" : "right";
+
+            const showLabel = !!col.title && !col.hideLabel;
+
+            return (
+              <View key={col.key} style={styles.cardRow}>
+                {showLabel && <Text style={[styles.cardLabel, { textAlign: col.labelAlign || "left" }]}>{col.title}</Text>}
+
+                <View style={[styles.cardValue, { alignItems: valueAlignItems }]}>
+                  {col.render ? (
+                    col.render(item)
+                  ) : (
+                    <Text style={[styles.cardValueText, { textAlign: valueTextAlign }]}>{String((item as any)[col.dataIndex || col.key] ?? "")}</Text>
+                  )}
+                </View>
               </View>
-            </View>
-          ))}
+            );
+          })}
         </View>
 
         {actions && (

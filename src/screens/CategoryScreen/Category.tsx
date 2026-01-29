@@ -2,35 +2,38 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Switch, Image, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast } from "expo-toast";
-import { styles, COLORS } from "./User.styles";
+import { styles, COLORS } from "./Category.styles";
 import Header from "../../components/Header/Header";
 import Table from "../../components/Table/Table";
 import Pagination from "../../components/Pagination/Pagination";
 import AddButton from "../../components/AddButton/AddButton";
 import SearchBar from "../../components/Searchbar/Searchbar";
-import ModalUser from "./partials/ModalUser";
-import UserService from "../../services/UserService";
+import ModalCategory from "./partials/ModalCategory";
+import CategoryService from "../../services/CategoryService";
 import { getToken, runWithDelay } from "../../utils/common";
 import { useSidebar } from "../../components/Sidebar/SidebarContext";
 import { usePagination } from "../../hooks/usePagination";
-import type { IUser } from "../../model/user/UserResponseModel";
-import type { IUserListRequest, IUserUpdateRequest } from "../../model/user/UserRequestModel";
+import type { ICategoryResponse } from "../../model/category/CategoryResponseModel";
+import type { ICategoryListRequest, ICategoryRequest } from "../../model/category/CategoryRequestModel";
 import { ColumnDef } from "../../components/Table/Table.types";
 import * as SecureStore from "expo-secure-store";
 import ErrorPage505 from "../ErrorPage505/ErrorPage505";
 
-export default function UserScreen() {
+export default function CategoryScreen() {
   const { open } = useSidebar();
   const toast = useToast();
-  const [listUsers, setListUsers] = useState<IUser[]>([]);
+
+  const [listCategory, setListCategory] = useState<ICategoryResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [modal, setModal] = useState<{ type: "add" | "edit" | "delete" | "detail" | null; item?: IUser | null }>({
+
+  const [modal, setModal] = useState<{ type: "add" | "edit" | "delete" | "detail" | null; item?: ICategoryResponse | null }>({
     type: null,
     item: null,
   });
   const [modalShown, setModalShown] = useState(false);
-  const [params, setParams] = useState<IUserListRequest>({ page: 1, limit: 10, keyword: "" });
+
+  const [params, setParams] = useState<ICategoryListRequest>({ page: 1, limit: 10, keyword: "" });
   const pagination = usePagination(params, setParams);
   const abortController = useRef<AbortController | null>(null);
   const [canView, setCanView] = useState<boolean | null>(null);
@@ -41,10 +44,10 @@ export default function UserScreen() {
   useEffect(() => {
     const loadPermissions = async () => {
       try {
-        const valView = await SecureStore.getItemAsync("USER_VIEW");
-        const valAdd = await SecureStore.getItemAsync("USER_ADD");
-        const valEdit = await SecureStore.getItemAsync("USER_UPDATE");
-        const valDelete = await SecureStore.getItemAsync("USER_DELETE");
+        const valView = await SecureStore.getItemAsync("CATEGORY_ITEM_VIEW");
+        const valAdd = await SecureStore.getItemAsync("CATEGORY_ITEM_ADD");
+        const valEdit = await SecureStore.getItemAsync("CATEGORY_ITEM_UPDATE");
+        const valDelete = await SecureStore.getItemAsync("CATEGORY_ITEM_DELETE");
         setCanView(valView === "1");
         setCanAdd(valAdd === "1");
         setCanEdit(valEdit === "1");
@@ -60,11 +63,11 @@ export default function UserScreen() {
   }, []);
 
   useEffect(() => {
-    getListUsers(params);
+    getData(params);
     return () => abortController.current?.abort();
   }, [params]);
 
-  const getListUsers = async (requestParams: IUserListRequest, isPull = false) => {
+  const getData = async (requestParams: ICategoryListRequest, isPull = false) => {
     if (!isPull) setIsLoading(true);
     const token = await getToken();
     if (!token) {
@@ -74,10 +77,10 @@ export default function UserScreen() {
     }
 
     abortController.current = new AbortController();
-    const response = await runWithDelay(() => UserService.list(requestParams, token, abortController.current?.signal), 500);
+    const response = await runWithDelay(() => CategoryService.list(requestParams, token, abortController.current?.signal), 500);
 
     if (response?.code === 200) {
-      setListUsers(response.result.items || []);
+      setListCategory(response.result.items || []);
       pagination.updatePagination?.(response.result.total ?? 0, response.result.page ?? requestParams.page, requestParams.limit);
     } else {
       toast.show(response?.message ?? "Lỗi tải dữ liệu");
@@ -88,94 +91,92 @@ export default function UserScreen() {
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    getListUsers({ ...params, page: 1 }, true);
+    getData({ ...params, page: 1 }, true);
   };
 
-  const handleToggleStatus = async (user: IUser) => {
+  const handleSave = async (payload: ICategoryRequest) => {
     const token = await getToken();
     if (!token) return;
 
-    const newStatus = Number(user.active) === 1 ? 0 : 1;
-    const oldStatus = Number(user.active);
-
-    setListUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, active: newStatus } : item)));
-
-    const response = await UserService.updateStatus(Number(user.id), newStatus, token);
-
-    if (response?.code === 200) {
-      toast.show("Đổi trạng thái thành công");
-    } else {
-      toast.show("Đổi trạng thái thất bại");
-      setListUsers((prev) => prev.map((item) => (item.id === user.id ? { ...item, active: oldStatus } : item)));
-    }
-  };
-
-  const handleSaveUser = async (payload: IUserUpdateRequest) => {
-    const token = await getToken();
-    if (!token) return;
-
-    const response = await UserService.update(payload, token);
+    const response = await CategoryService.update(payload, token);
 
     if (response?.code === 200) {
       toast.show(modal.type === "add" ? "Thêm mới thành công" : "Cập nhật thành công");
       setModalShown(false);
-      getListUsers(params);
+      getData(params);
     } else {
       toast.show(response?.message ?? "Có lỗi xảy ra");
     }
   };
 
-  const handleDeleteUser = async () => {
+  const handleDelete = async () => {
     if (!modal.item) return;
     const token = await getToken();
     if (!token) return;
 
-    const response = await UserService.delete(Number(modal.item.id), token);
+    const response = await CategoryService.delete(Number(modal.item.id), token);
 
     if (response?.code === 200) {
       toast.show("Xóa thành công");
       setModalShown(false);
-      getListUsers(params);
+      getData(params);
     } else {
       toast.show(response?.message ?? "Xóa thất bại");
     }
   };
 
-  const columns: ColumnDef<IUser>[] = [
+  const handleToggleStatus = async (item: ICategoryResponse) => {
+    const token = await getToken();
+    if (!token) return;
+
+    const newStatus = Number(item.active) === 1 ? 0 : 1;
+    const oldStatus = Number(item.active);
+
+    setListCategory((prev) => prev.map((i) => (i.id === item.id ? { ...i, active: newStatus } : i)));
+
+    const response = await CategoryService.updateStatus(item.id, newStatus, token);
+
+    if (response?.code === 200) {
+      toast.show("Đổi trạng thái thành công");
+    } else {
+      toast.show("Đổi trạng thái thất bại");
+      setListCategory((prev) => prev.map((i) => (i.id === item.id ? { ...i, active: oldStatus } : i)));
+    }
+  };
+
+  const columns: ColumnDef<ICategoryResponse>[] = [
     {
-      key: "name",
-      title: "Người dùng",
+      key: "info",
+      title: "Danh mục",
       render: (item) => (
-        <View style={styles.cellUserContainer}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 }}>
           {item.avatar ? (
             <Image
               source={{ uri: item.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random` }}
-              style={styles.avatar}
+              style={styles.listAvatar}
             />
           ) : (
-            <View style={styles.avatar}>
+            <View style={styles.listAvatar}>
               <Text style={styles.avatarText}>{item.name?.charAt(0).toUpperCase()}</Text>
             </View>
           )}
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.cellTextBold} numberOfLines={1}>
-              {item.name}
-            </Text>
-            <Text style={styles.cellText} numberOfLines={1}>
-              {item.email}
-            </Text>
+          <View style={{ gap: 2, flex: 1 }}>
+            <Text style={{ fontWeight: "700", fontSize: 15, color: COLORS.text }}>{item.name}</Text>
+            <View style={{ flexDirection: "row" }}>
+              <View
+                style={{
+                  backgroundColor: item.type === 1 ? "#e0f2f1" : "#fff3e0",
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: "600", color: item.type === 1 ? "#00695c" : "#e65100" }}>
+                  {item.type === 1 ? "Dịch vụ" : "Sản phẩm"}
+                </Text>
+              </View>
+            </View>
           </View>
-        </View>
-      ),
-    },
-    {
-      key: "phone",
-      title: "Số điện thoại",
-      align: "left",
-      render: (item) => (
-        <View>
-          <Text style={styles.cellText}>{item.phone}</Text>
         </View>
       ),
     },
@@ -190,7 +191,7 @@ export default function UserScreen() {
           onValueChange={() => handleToggleStatus(item)}
         />
       ),
-      width: 80,
+      width: 60,
     },
   ];
 
@@ -218,7 +219,9 @@ export default function UserScreen() {
       <Header onMenuPress={open} />
 
       <View style={styles.toolbar}>
-        <SearchBar placeholder="Tìm người dùng..." onSearch={(text) => setParams((p) => ({ ...p, keyword: text, page: 1 }))} value={params.keyword} />
+        <View style={{ flex: 1 }}>
+          <SearchBar placeholder="Tìm danh mục..." onSearch={(text) => setParams((p) => ({ ...p, keyword: text, page: 1 }))} value={params.keyword} />
+        </View>
         {canAdd && (
           <AddButton
             label="Thêm mới"
@@ -231,7 +234,7 @@ export default function UserScreen() {
       </View>
 
       <Table
-        data={listUsers}
+        data={listCategory}
         columns={columns}
         isLoading={isLoading}
         isRefreshing={isRefreshing}
@@ -258,7 +261,7 @@ export default function UserScreen() {
         }}
       />
 
-      {!isLoading && listUsers.length > 0 && (
+      {!isLoading && listCategory.length > 0 && (
         <Pagination
           total={pagination.totalItem}
           page={pagination.page}
@@ -268,13 +271,13 @@ export default function UserScreen() {
         />
       )}
 
-      <ModalUser
+      <ModalCategory
         shown={modalShown}
         type={modal.type}
         item={modal.item}
         onClose={() => setModalShown(false)}
-        onSubmit={handleSaveUser}
-        onDelete={handleDeleteUser}
+        onSubmit={handleSave}
+        onDelete={handleDelete}
       />
     </SafeAreaView>
   );

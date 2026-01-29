@@ -1,4 +1,4 @@
-import { urlsApi } from '../configs/urls';
+import { urlsApi } from "../configs/urls";
 
 export interface UploadFileResponse {
   code: number;
@@ -8,16 +8,16 @@ export interface UploadFileResponse {
 
 export async function uploadFile(file: File, token?: string): Promise<UploadFileResponse | null> {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
   const headers: Record<string, string> = {};
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   try {
     const response = await fetch(urlsApi.upload_image, {
-      method: 'POST',
+      method: "POST",
       headers,
       body: formData,
     });

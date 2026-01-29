@@ -1,11 +1,11 @@
 import { urlsApi } from "../configs/urls";
 import { convertParamsToString } from "../utils/convertParams";
-import type { IRoleListRequest, IRoleUpdateRequest } from "../model/roles/RoleRequestModel";
+import type { IUnitListRequest, IUnitRequest } from "../model/unit/UnitRequestModel";
 
 export default {
-  // Lấy danh sách role
-  list: (params: IRoleListRequest, token: string, signal?: AbortSignal) => {
-    return fetch(`${urlsApi.role.list}${convertParamsToString(params)}`, {
+  // Lấy danh sách đơn vị
+  list: (params: IUnitListRequest, token?: string, signal?: AbortSignal) => {
+    return fetch(`${urlsApi.unit.list}${convertParamsToString(params)}`, {
       signal,
       method: "GET",
       headers: {
@@ -15,9 +15,9 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Thêm/Cập nhật role
-  update: (body: IRoleUpdateRequest, token: string) => {
-    return fetch(urlsApi.role.update, {
+  // Thêm/Cập nhật đơn vị
+  update: (body: IUnitRequest, token: string) => {
+    return fetch(urlsApi.unit.update, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -27,9 +27,9 @@ export default {
     }).then((res) => res.json());
   },
 
-  // Xóa role
+  // Xóa đơn vị
   delete: (id: number, token: string) => {
-    return fetch(`${urlsApi.role.delete}/${id}`, {
+    return fetch(`${urlsApi.unit.delete}/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

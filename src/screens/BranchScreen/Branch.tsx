@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Switch, Image, TouchableOpacity } from "react-native";
+import { View, Text, Switch, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast } from "expo-toast";
 import { styles, COLORS } from "./Branch.styles";
@@ -16,6 +16,8 @@ import { usePagination } from "../../hooks/usePagination";
 import type { IBranchResponse } from "../../model/branch/BranchResponseModel";
 import type { IBranchRequest, IBranchListRequest } from "../../model/branch/BranchRequestModel";
 import { ColumnDef } from "../../components/Table/Table.types";
+import * as SecureStore from "expo-secure-store";
+import ErrorPage505 from "../ErrorPage505/ErrorPage505";
 
 export default function BranchScreen() {
   const { open } = useSidebar();
@@ -34,6 +36,31 @@ export default function BranchScreen() {
   const [params, setParams] = useState<IBranchListRequest>({ page: 1, limit: 10, keyword: "" });
   const pagination = usePagination(params, setParams);
   const abortController = useRef<AbortController | null>(null);
+  const [canView, setCanView] = useState<boolean | null>(null);
+  const [canAdd, setCanAdd] = useState<boolean | null>(null);
+  const [canDelete, setCanDelete] = useState<boolean | null>(null);
+  const [canEdit, setCanEdit] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        const valView = await SecureStore.getItemAsync("BRANCH_VIEW");
+        const valAdd = await SecureStore.getItemAsync("BRANCH_ADD");
+        const valEdit = await SecureStore.getItemAsync("BRANCH_UPDATE");
+        const valDelete = await SecureStore.getItemAsync("BRANCH_DELETE");
+        setCanView(valView === "1");
+        setCanAdd(valAdd === "1");
+        setCanEdit(valEdit === "1");
+        setCanDelete(valDelete === "1");
+      } catch (error) {
+        setCanView(false);
+        setCanAdd(false);
+        setCanEdit(false);
+        setCanDelete(false);
+      }
+    };
+    loadPermissions();
+  }, []);
 
   useEffect(() => {
     getListBranches(params);
@@ -156,19 +183,40 @@ export default function BranchScreen() {
     },
   ];
 
+  if (canView === null) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (canView === false) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+        <Header onMenuPress={open} />
+        <View style={{ flex: 1 }}>
+          <ErrorPage505 />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <Header onMenuPress={open} />
 
       <View style={styles.toolbar}>
         <SearchBar placeholder="Tìm chi nhánh..." onSearch={(text) => setParams((p) => ({ ...p, keyword: text, page: 1 }))} value={params.keyword} />
-        <AddButton
-          label="Thêm"
-          onClick={() => {
-            setModal({ type: "add" });
-            setModalShown(true);
-          }}
-        />
+        {canAdd && (
+          <AddButton
+            label="Thêm mới"
+            onClick={() => {
+              setModal({ type: "add" });
+              setModalShown(true);
+            }}
+          />
+        )}
       </View>
 
       <Table
@@ -178,18 +226,24 @@ export default function BranchScreen() {
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
         actions={{
-          onEdit: (item) => {
-            setModal({ type: "edit", item });
-            setModalShown(true);
-          },
-          onDelete: (item) => {
-            setModal({ type: "delete", item });
-            setModalShown(true);
-          },
-          onView: (item) => {
-            setModal({ type: "detail", item });
-            setModalShown(true);
-          },
+          onEdit: canEdit
+            ? (item) => {
+                setModal({ type: "edit", item });
+                setModalShown(true);
+              }
+            : undefined,
+          onDelete: canDelete
+            ? (item) => {
+                setModal({ type: "delete", item });
+                setModalShown(true);
+              }
+            : undefined,
+          onView: canView
+            ? (item) => {
+                setModal({ type: "detail", item });
+                setModalShown(true);
+              }
+            : undefined,
         }}
       />
 

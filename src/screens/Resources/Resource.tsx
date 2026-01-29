@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast } from "expo-toast";
 import * as SecureStore from "expo-secure-store";
@@ -153,11 +153,11 @@ export default function ResourceScreen() {
       title: "Chi tiết",
       render: (item) => (
         <View style={{ gap: 2 }}>
-          <Text style={{ fontSize: 13, color: COLORS.primary }} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={{ fontSize: 14, color: COLORS.primary }} numberOfLines={1} ellipsizeMode="tail">
             {item.uri}
           </Text>
           {item.description ? (
-            <Text style={{ fontSize: 13, color: COLORS.textGray }} numberOfLines={1} ellipsizeMode="tail">
+            <Text style={{ fontSize: 14, color: COLORS.textGray }} numberOfLines={1} ellipsizeMode="tail">
               {item.description}
             </Text>
           ) : null}
@@ -166,9 +166,17 @@ export default function ResourceScreen() {
     },
   ];
 
+  if (canView === null) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
   if (canView === false) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
         <Header onMenuPress={open} />
         <View style={{ flex: 1 }}>
           <ErrorPage505 />

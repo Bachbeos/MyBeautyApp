@@ -11,6 +11,10 @@ import ResourcesScreen from "../screens/Resources/Resource";
 import PermissionScreen from "../screens/Permission/Permission";
 import BranchScreen from "../screens/BranchScreen/Branch";
 import UserScreen from "../screens/UserScreen/User";
+import CustomerSourceScreen from "../screens/CustomerSource/CustomerSource";
+import VoucherScreen from "../screens/Voucher/Voucher";
+import UnitScreen from "../screens/Unit/Unit";
+import CategoryScreen from "../screens/CategoryScreen/Category";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -27,6 +31,10 @@ const MainNavigator = () => {
       <Stack.Screen name="Permission" component={PermissionScreen} />
       <Stack.Screen name="BranchScreen" component={BranchScreen} />
       <Stack.Screen name="ManagerUsersScreen" component={UserScreen} />
+      <Stack.Screen name="CustomerSourceScreen" component={CustomerSourceScreen} />
+      <Stack.Screen name="VoucherScreen" component={VoucherScreen} />
+      <Stack.Screen name="UnitScreen" component={UnitScreen} />
+      <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
     </Stack.Navigator>
   );
 };

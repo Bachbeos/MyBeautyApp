@@ -1,9 +1,14 @@
 const baseUrl = process.env.EXPO_PUBLIC_API_BASE;
 
 export const urlsApi = {
+  auth: {
+    forgotPassword: `${baseUrl}/auth/forgot-password`,
+    resetPassword: `${baseUrl}/auth/reset-password`,
+  },
   user: {
     login: `${baseUrl}/user/authenticate`,
     register: `${baseUrl}/user/create`,
+    info: `${baseUrl}/user/info`,
     list: `${baseUrl}/user/list`,
     update: `${baseUrl}/user/update`,
     delete: `${baseUrl}/user/delete`,
@@ -32,6 +37,99 @@ export const urlsApi = {
     list: `${baseUrl}/branch/list`,
     update: `${baseUrl}/branch/update`,
     delete: `${baseUrl}/branch/delete`,
-    updateStatus: `${baseUrl}//branch/update-status`,
+    detail: `${baseUrl}/branch/getById`,
+    updateStatus: `${baseUrl}/branch/update-status`,
   },
+  customer: {
+    list: `${baseUrl}/customer/list`,
+    update: `${baseUrl}/customer/update`,
+    delete: `${baseUrl}/customer/delete`,
+    detail: `${baseUrl}/customer/get`,
+    extraInfo: `${baseUrl}/customerExtraInfo/list`,
+  },
+  customerSource: {
+    list: `${baseUrl}/customerSource/list`,
+    update: `${baseUrl}/customerSource/update`,
+    delete: `${baseUrl}/customerSource/delete`,
+    detail: `${baseUrl}/customerSource/get`,
+  },
+  customerAttribute: {
+    list: `${baseUrl}/customerAttribute/list`,
+    update: `${baseUrl}/customerAttribute/update`,
+    delete: `${baseUrl}/customerAttribute/delete`,
+    detail: `${baseUrl}/customerAttribute/getById`,
+  },
+  invoice: {
+    draft: `${baseUrl}/invoice/draft`,
+    recalculate: `${baseUrl}/invoice/recalculate`,
+    list: `${baseUrl}/invoice/list`,
+    update: `${baseUrl}/invoice/update`,
+    delete: `${baseUrl}/invoice/delete`,
+    detail: `${baseUrl}/invoice/get`,
+  },
+  product: {
+    list: `${baseUrl}/product/list`,
+    update: `${baseUrl}/product/update`,
+    delete: `${baseUrl}/product/delete`,
+    detail: `${baseUrl}/product/get`,
+  },
+  service: {
+    list: `${baseUrl}/service/list`,
+    update: `${baseUrl}/service/update`,
+    delete: `${baseUrl}/service/delete`,
+    detail: `${baseUrl}/service/get`,
+  },
+  boughtProduct: {
+    update: `${baseUrl}/boughtProduct/update`,
+    list: `${baseUrl}/boughtProduct/list`,
+    delete: `${baseUrl}/boughtProduct/delete`,
+  },
+  boughtService: {
+    update: `${baseUrl}/boughtService/update`,
+    list: `${baseUrl}/boughtService/list`,
+    delete: `${baseUrl}/boughtService/delete`,
+  },
+  unit: {
+    list: `${baseUrl}/unit/list`,
+    update: `${baseUrl}/unit/update`,
+    delete: `${baseUrl}/unit/delete`,
+    debugger: `${baseUrl}/unit/get`,
+  },
+  category: {
+    list: `${baseUrl}/categoryItem/list`,
+    update: `${baseUrl}/categoryItem/update`,
+    delete: `${baseUrl}/categoryItem/delete`,
+    detail: `${baseUrl}/categoryItem/get`,
+    getChild: `${baseUrl}/categoryItem/child`,
+    status: `${baseUrl}/categoryItem/update-status`,
+  },
+  schedule: {
+    list: `${baseUrl}/schedule/list`,
+    update: `${baseUrl}/schedule/update`,
+    delete: `${baseUrl}/schedule/delete`,
+    detail: `${baseUrl}/schedule/get`,
+  },
+  voucher: {
+    list: `${baseUrl}/voucher/list`,
+    update: `${baseUrl}/voucher/update`,
+    delete: `${baseUrl}/voucher/delete`,
+    detail: `${baseUrl}/voucher/get`,
+    applyVoucher: `${baseUrl}/voucher/applyVoucher`,
+    getByCode: `${baseUrl}/voucher/getByCode`,
+  },
+  callHistory: {
+    list: `${baseUrl}/callHistory/list`,
+    update: `${baseUrl}/callHistory/update`,
+    updateStatus: `${baseUrl}/callHistory/update-status`,
+  },
+  payment: {
+    payment: `${baseUrl}/payment/submitOrder`,
+  },
+  report: {
+    customerByMonth: `${baseUrl}/report/customer/by-month`,
+    customerBySource: `${baseUrl}/report/customer/by-source`,
+    revenueByMonth: `${baseUrl}/report/invoice/monthly-revenue`,
+    frequency: `${baseUrl}/report/invoice/frequency`,
+  },
+  upload_image: `${baseUrl}/file/upload`,
 };

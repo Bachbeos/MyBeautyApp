@@ -9,4 +9,8 @@ export type RootStackParamList = {
   Permission: { roleId: number; roleName: string };
   BranchScreen: undefined;
   ManagerUsersScreen: undefined;
+  CustomerSourceScreen: undefined;
+  VoucherScreen: undefined;
+  UnitScreen: undefined;
+  CategoryScreen: undefined;
 };
