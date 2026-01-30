@@ -22,6 +22,7 @@ import CustomerSettingsScreen from "../screens/CustomerSettingsScreen/CustomerSe
 import CustomerScreen from "../screens/CustomerScreen/Customer";
 import CallHistoryScreen from "../screens/CallHistoryScreen/HistoryCall";
 import ProfileScreen from "../screens/ProfileScreen/Profile";
+import CalendarScreen from "../screens/CalendarScreen/Calendar";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -49,6 +50,7 @@ const MainNavigator = () => {
       <Stack.Screen name="CustomersScreen" component={CustomerScreen} />
       <Stack.Screen name="CallHistoryScreen" component={CallHistoryScreen} />
       <Stack.Screen name="ProfileSettingsScreen" component={ProfileScreen} />
+      <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
     </Stack.Navigator>
   );
 };
