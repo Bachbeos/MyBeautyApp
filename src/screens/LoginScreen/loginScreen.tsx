@@ -1,24 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import * as SecureStore from 'expo-secure-store';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Input, Button, CheckBox, Icon } from '@rneui/themed';
-import { loginStyles as styles } from './loginScreen.styles';
-import { RootStackParamList } from '../../types/types';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { Divider } from 'react-native-elements';
-import LogoApp from '../../../assets/splash/logoApp.svg';
-import LogoGoogle from '../../../assets/images/logo_google.svg';
-import { IUserLoginRequest } from '../../model/user/UserRequestModel';
-import UserService from '../../services/UserService';
-import PermissionService from '../../services/PermissionService';
-import { useToast } from 'expo-toast';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import * as SecureStore from "expo-secure-store";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { Input, Button, CheckBox, Icon } from "@rneui/themed";
+import { loginStyles as styles } from "./loginScreen.styles";
+import { RootStackParamList } from "../../types/types";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { Divider } from "react-native-elements";
+import LogoApp from "../../../assets/splash/logoApp.svg";
+import LogoGoogle from "../../../assets/images/logo_google.svg";
+import { IUserLoginRequest } from "../../model/user/UserRequestModel";
+import UserService from "../../services/UserService";
+import PermissionService from "../../services/PermissionService";
+import { useToast } from "expo-toast";
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 
 const LoginScreen = () => {
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const navigation = useNavigation<LoginScreenNavigationProp>();
@@ -33,7 +33,7 @@ const LoginScreen = () => {
 
   const handleLoginSuccess = async (token: string) => {
     try {
-      await SecureStore.setItemAsync('token', token);
+      await SecureStore.setItemAsync("token", token);
       const response = await PermissionService.resources(token);
 
       if (response && Array.isArray(response.result)) {
@@ -42,19 +42,19 @@ const LoginScreen = () => {
           const code = item.code;
           let actions = item.actions;
 
-          if (typeof actions === 'string' && actions.trim().startsWith('[') && actions.trim().endsWith(']')) {
+          if (typeof actions === "string" && actions.trim().startsWith("[") && actions.trim().endsWith("]")) {
             try {
               const parsed = JSON.parse(actions);
               if (Array.isArray(parsed)) actions = parsed;
             } catch (e) {
-              console.error('Lỗi parse action:', e);
+              console.error("Lỗi parse action:", e);
             }
           }
 
           if (code && Array.isArray(actions)) {
             actions.forEach((act: string) => {
               const key = `${code}_${act}`;
-              map[key] = '1';
+              map[key] = "1";
             });
           }
         });
@@ -64,16 +64,16 @@ const LoginScreen = () => {
       } else {
       }
     } catch (e) {
-      console.error('Lỗi trong quá trình xử lý sau đăng nhập:', e);
+      console.error("Lỗi trong quá trình xử lý sau đăng nhập:", e);
     }
 
-    toast.show('Đăng nhập thành công!');
-    navigation.replace('RolesPermissionsScreen');
+    toast.show("Đăng nhập thành công!");
+    navigation.replace("LeadReportScreen");
   };
 
   const handleSubmit = async () => {
     if (!phone || !password) {
-      return toast.show('Vui lòng nhập đầy đủ thông tin!');
+      return toast.show("Vui lòng nhập đầy đủ thông tin!");
     }
 
     setIsLoading(true);
@@ -84,13 +84,13 @@ const LoginScreen = () => {
       if (respond?.result?.token) {
         await handleLoginSuccess(respond.result.token);
       } else if (respond?.code === 400) {
-        toast.show(respond?.message || 'Số điện thoại hoặc mật khẩu không đúng!');
+        toast.show(respond?.message || "Số điện thoại hoặc mật khẩu không đúng!");
       } else {
-        toast.show(respond?.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau!');
+        toast.show(respond?.message || "Đã có lỗi xảy ra. Vui lòng thử lại sau!");
       }
     } catch (error) {
-      console.error('Login error:', error);
-      toast.show('Không thể kết nối tới máy chủ. Vui lòng thử lại sau!');
+      console.error("Login error:", error);
+      toast.show("Không thể kết nối tới máy chủ. Vui lòng thử lại sau!");
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +113,7 @@ const LoginScreen = () => {
         <Input
           placeholder="Số điện thoại"
           keyboardType="phone-pad"
-          rightIcon={{ type: 'font-awesome', name: 'phone', color: '#888' }}
+          rightIcon={{ type: "font-awesome", name: "phone", color: "#888" }}
           value={phone}
           onChangeText={setPhone}
           inputStyle={styles.inputText}
@@ -124,9 +124,9 @@ const LoginScreen = () => {
           placeholder="Mật khẩu"
           secureTextEntry={!showPassword}
           rightIcon={{
-            type: 'font-awesome',
-            name: showPassword ? 'eye' : 'eye-slash',
-            color: '#888',
+            type: "font-awesome",
+            name: showPassword ? "eye" : "eye-slash",
+            color: "#888",
             onPress: () => setShowPassword(!showPassword),
           }}
           value={password}
@@ -144,7 +144,7 @@ const LoginScreen = () => {
             textStyle={styles.checkboxLabel}
           />
           <TouchableOpacity>
-            <Text style={styles.linkDanger} onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.linkDanger} onPress={() => navigation.navigate("ForgotPassword")}>
               Quên mật khẩu?
             </Text>
           </TouchableOpacity>
@@ -160,8 +160,8 @@ const LoginScreen = () => {
         />
 
         <Text style={styles.signupText}>
-          Mới sử dụng hệ thống của chúng tôi?{' '}
-          <Text style={styles.linkPrimary} onPress={() => navigation.navigate('Register')}>
+          Mới sử dụng hệ thống của chúng tôi?{" "}
+          <Text style={styles.linkPrimary} onPress={() => navigation.navigate("Register")}>
             Tạo tài khoản
           </Text>
         </Text>
@@ -175,13 +175,13 @@ const LoginScreen = () => {
         <View style={styles.socialRow}>
           <Button
             icon={<Icon name="facebook" type="font-awesome" color="white" />}
-            buttonStyle={[styles.socialBtn, { backgroundColor: '#1877F2' }]}
+            buttonStyle={[styles.socialBtn, { backgroundColor: "#1877F2" }]}
           />
           <Button
             icon={<LogoGoogle width={34} height={34} />}
-            buttonStyle={[styles.socialBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E8E8E8' }]}
+            buttonStyle={[styles.socialBtn, { backgroundColor: "#fff", borderWidth: 1, borderColor: "#E8E8E8" }]}
           />
-          <Button icon={<Icon name="apple" type="font-awesome" color="white" />} buttonStyle={[styles.socialBtn, { backgroundColor: '#000' }]} />
+          <Button icon={<Icon name="apple" type="font-awesome" color="white" />} buttonStyle={[styles.socialBtn, { backgroundColor: "#000" }]} />
         </View>
       </ScrollView>
 

@@ -21,4 +21,5 @@ export type RootStackParamList = {
   CallHistoryScreen: undefined;
   ProfileSettingsScreen: undefined;
   CalendarScreen: undefined;
+  LeadReportScreen: undefined;
 };
