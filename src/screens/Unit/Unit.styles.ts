@@ -54,7 +54,7 @@ export const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.text,
   },
   inputDisabled: { backgroundColor: COLORS.inputDisabled, color: COLORS.textGray },

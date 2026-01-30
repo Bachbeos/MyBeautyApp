@@ -120,6 +120,7 @@ export const urlsApi = {
   callHistory: {
     list: `${baseUrl}/callHistory/list`,
     update: `${baseUrl}/callHistory/update`,
+    delete: `${baseUrl}/callHistory/delete`,
     updateStatus: `${baseUrl}/callHistory/update-status`,
   },
   payment: {

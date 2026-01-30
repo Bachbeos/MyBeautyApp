@@ -15,6 +15,13 @@ import CustomerSourceScreen from "../screens/CustomerSource/CustomerSource";
 import VoucherScreen from "../screens/Voucher/Voucher";
 import UnitScreen from "../screens/Unit/Unit";
 import CategoryScreen from "../screens/CategoryScreen/Category";
+import ProductScreen from "../screens/ProductScreen/Product";
+import ServiceScreen from "../screens/ServiceScreen/Service";
+import InvoiceScreen from "../screens/InvoiceScreen/Invoice";
+import CustomerSettingsScreen from "../screens/CustomerSettingsScreen/CustomerSettings";
+import CustomerScreen from "../screens/CustomerScreen/Customer";
+import CallHistoryScreen from "../screens/CallHistoryScreen/HistoryCall";
+import ProfileScreen from "../screens/ProfileScreen/Profile";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -35,6 +42,13 @@ const MainNavigator = () => {
       <Stack.Screen name="VoucherScreen" component={VoucherScreen} />
       <Stack.Screen name="UnitScreen" component={UnitScreen} />
       <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
+      <Stack.Screen name="ProductScreen" component={ProductScreen} />
+      <Stack.Screen name="ServiceScreen" component={ServiceScreen} />
+      <Stack.Screen name="InvoiceScreen" component={InvoiceScreen} />
+      <Stack.Screen name="CustomerSettingsScreen" component={CustomerSettingsScreen} />
+      <Stack.Screen name="CustomersScreen" component={CustomerScreen} />
+      <Stack.Screen name="CallHistoryScreen" component={CallHistoryScreen} />
+      <Stack.Screen name="ProfileSettingsScreen" component={ProfileScreen} />
     </Stack.Navigator>
   );
 };

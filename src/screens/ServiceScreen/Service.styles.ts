@@ -8,7 +8,6 @@ export const COLORS = {
   white: "#fff",
   text: "#1f2020",
   textGray: "#707070",
-  textLight: "#9ca3af",
   danger: "#ef1e1e",
   success: "#28a745",
   info: "#17a2b8",
@@ -16,6 +15,7 @@ export const COLORS = {
   inputBg: "#fff",
   inputDisabled: "#f3f4f6",
   bgBackdrop: "rgba(0,0,0,0.5)",
+  bgLight: "#f8f9fa",
 };
 
 export const styles = StyleSheet.create({
@@ -47,7 +47,21 @@ export const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: "600", color: COLORS.text, flex: 0 },
   closeIcon: { padding: 4 },
   modalBody: { padding: 20 },
-  formGroup: { marginBottom: 16 },
+
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginTop: 16,
+    marginBottom: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+
+  formGroup: { marginBottom: 16, marginTop: 16 },
+  row: { flexDirection: "row", gap: 12 },
+  col: { flex: 1 },
+
   label: { fontSize: 14, fontWeight: "500", marginBottom: 6, color: COLORS.text },
   input: {
     borderWidth: 1,
@@ -61,21 +75,20 @@ export const styles = StyleSheet.create({
   },
   inputDisabled: { backgroundColor: COLORS.inputDisabled, color: COLORS.textGray },
 
-  switchRow: {
+  optionRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 6,
-    padding: 10,
-    backgroundColor: COLORS.inputBg,
+    gap: 20,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  radioItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
 
-  avatarSection: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
+  avatarSection: { alignItems: "center", marginBottom: 10, marginTop: 4 },
   avatarContainer: {
     width: 100,
     height: 100,
@@ -88,12 +101,7 @@ export const styles = StyleSheet.create({
     borderStyle: "dashed",
     position: "relative",
   },
-  avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    resizeMode: "cover",
-  },
+  avatarImage: { width: 100, height: 100, borderRadius: 50, resizeMode: "cover" },
   editAvatarBadge: {
     position: "absolute",
     bottom: 0,
@@ -107,13 +115,65 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "white",
   },
-  avatarHint: {
-    fontSize: 12,
-    color: COLORS.textGray,
-    marginTop: 8,
-  },
+  avatarHint: { fontSize: 12, color: COLORS.textGray, marginTop: 8 },
 
-  listAvatar: {
+  comboContainer: {
+    backgroundColor: COLORS.bgLight,
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  comboHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  comboTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+  addComboBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 4,
+  },
+  addComboText: { fontSize: 13, color: COLORS.primary, fontWeight: "600" },
+
+  comboCard: {
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  comboCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  comboCardTitle: { fontSize: 14, fontWeight: "700", color: COLORS.textGray },
+  deleteComboBtn: { padding: 4 },
+
+  avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -123,11 +183,20 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
   avatarText: {
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
+  },
+  cellTextBold: {
+    fontWeight: "700",
+    fontSize: 14,
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  cellText: {
+    fontSize: 14,
+    color: COLORS.textGray,
   },
 
   deleteContainer: { alignItems: "center", padding: 20, paddingTop: 40 },

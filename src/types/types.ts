@@ -13,4 +13,11 @@ export type RootStackParamList = {
   VoucherScreen: undefined;
   UnitScreen: undefined;
   CategoryScreen: undefined;
+  ProductScreen: undefined;
+  ServiceScreen: undefined;
+  InvoiceScreen: undefined;
+  CustomerSettingsScreen: undefined;
+  CustomersScreen: undefined;
+  CallHistoryScreen: undefined;
+  ProfileSettingsScreen: undefined;
 };

@@ -27,6 +27,15 @@ export default {
     }).then((res) => res.json());
   },
 
+  delete: (id: number, token: string) => {
+    return fetch(`${urlsApi.callHistory.delete}?id=${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }).then((res) => res.json());
+  },
+
   updateStatus: (id: number, status: number, token: string) => {
     return fetch(`${urlsApi.callHistory.updateStatus}?id=${id}&status=${status}`, {
       method: "POST",

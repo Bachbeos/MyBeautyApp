@@ -1,6 +1,6 @@
 export interface IProductResponse {
   id?: number | undefined;
-  name?: string;
+  name: string;
   categoryId?: number;
   categoryName?: string;
   content?: string;

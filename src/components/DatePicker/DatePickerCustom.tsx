@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Platform } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,11 +32,6 @@ const DatePickerCustom: React.FC<DatePickerProps> = ({
   placeholder = "Chọn thời gian",
 }) => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-
-  const { width: windowWidth } = useWindowDimensions();
-  const horizontalMargin = 90;
-  const maxPickerWidth = 520;
-  const pickerWidth = Math.min(windowWidth - horizontalMargin, maxPickerWidth);
 
   const showDatePicker = () => {
     if (!disabled) setDatePickerVisibility(true);
@@ -90,21 +85,6 @@ const DatePickerCustom: React.FC<DatePickerProps> = ({
         locale="vi-VN"
         confirmTextIOS="Xác nhận"
         cancelTextIOS="Hủy"
-        display={Platform.OS === "ios" ? "spinner" : "default"}
-        pickerContainerStyleIOS={{
-          backgroundColor: "white",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingHorizontal: 0,
-          paddingVertical: 0,
-        }}
-        pickerStyleIOS={{
-          width: pickerWidth,
-          alignSelf: "center",
-          backgroundColor: "white",
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
       />
     </View>
   );

@@ -12,7 +12,6 @@ export const COLORS = {
   danger: "#ef1e1e",
   success: "#28a745",
   info: "#17a2b8",
-  warning: "#ffc107",
   inputBg: "#fff",
   inputDisabled: "#f3f4f6",
   bgBackdrop: "rgba(0,0,0,0.5)",
@@ -47,7 +46,19 @@ export const styles = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: "600", color: COLORS.text, flex: 0 },
   closeIcon: { padding: 4 },
   modalBody: { padding: 20 },
+
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginTop: 16,
+    marginBottom: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
   formGroup: { marginBottom: 16 },
+  row: { flexDirection: "row", gap: 12 },
+  col: { flex: 1 },
   label: { fontSize: 14, fontWeight: "500", marginBottom: 6, color: COLORS.text },
   input: {
     borderWidth: 1,
@@ -74,7 +85,8 @@ export const styles = StyleSheet.create({
 
   avatarSection: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 4,
   },
   avatarContainer: {
     width: 100,
@@ -114,6 +126,16 @@ export const styles = StyleSheet.create({
   },
 
   listAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#eee",
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+
+  avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -123,11 +145,55 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
   avatarText: {
     fontSize: 16,
     fontWeight: "bold",
     color: COLORS.primary,
+  },
+  cellTextBold: {
+    fontWeight: "700",
+    fontSize: 14,
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  cellText: {
+    fontSize: 14,
+    color: COLORS.textGray,
+  },
+
+  discountContainer: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    overflow: "hidden",
+    backgroundColor: COLORS.inputBg,
+  },
+  discountInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  unitButton: {
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.border,
+    backgroundColor: "#f9fafb",
+  },
+  unitText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textGray,
+  },
+  unitActive: {
+    backgroundColor: COLORS.primary,
+  },
+  unitTextActive: {
+    color: "white",
   },
 
   deleteContainer: { alignItems: "center", padding: 20, paddingTop: 40 },
