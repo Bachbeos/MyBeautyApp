@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Switch, Image } from "react-native";
+import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useToast } from "expo-toast";
 import { styles, COLORS } from "./Invoice.styles";
@@ -154,7 +154,7 @@ export default function InvoiceScreen() {
           <SearchBar placeholder="Tìm hóa đơn..." onSearch={(text) => setParams((p) => ({ ...p, keyword: text, page: 1 }))} value={params.keyword} />
         </View>
         <AddButton
-          label="Tạo HĐ"
+          label="Tạo hóa đơn"
           onClick={() => {
             setModal({ type: "add" });
             setModalShown(true);

@@ -51,6 +51,43 @@ export const styles = StyleSheet.create({
   modalTitle: { fontSize: 17, fontWeight: "700", color: COLORS.text },
   modalBody: { padding: 16 },
 
+  // --- ACCORDION LAYOUT (Giống Customer) ---
+  accordionItem: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: "hidden",
+  },
+  accordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    backgroundColor: "#f8f9fa",
+  },
+  accordionTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.text,
+    flex: 1,
+    marginLeft: 10,
+  },
+  accordionContent: {
+    padding: 14,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.white,
+  },
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: "#e3f2fd",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   // --- SECTIONS ---
   sectionTitle: {
     fontSize: 13,

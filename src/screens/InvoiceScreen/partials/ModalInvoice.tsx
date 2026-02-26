@@ -13,6 +13,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  Linking, // Import Linking để mở link thanh toán
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useToast } from "expo-toast";
@@ -26,10 +27,10 @@ import ProductService from "../../../services/ProductService";
 import BoughtProductService, { type IBoughtProductRequest } from "../../../services/BoughtProductService";
 import ServiceService from "../../../services/ServiceService";
 import BoughtServiceService, { type IBoughtServiceRequest } from "../../../services/BoughtServiceService";
+import PaymentService from "../../../services/PaymentService"; // Bổ sung PaymentService
 
 import { getToken } from "../../../utils/common";
 import SelectCustom from "../../../components/SelectCustom/SelectCustom";
-import DatePickerCustom from "../../../components/DatePicker/DatePickerCustom";
 
 import type { IInvoiceRequest } from "../../../model/invoice/InvoiceRequestModel";
 import type { IInvoiceResponse } from "../../../model/invoice/InvoiceResponseModel";
@@ -88,6 +89,11 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
   const [loading, setLoading] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
 
+  // --- ACCORDION STATE ---
+  const [expandCustomer, setExpandCustomer] = useState(true);
+  const [expandItems, setExpandItems] = useState(true);
+  const [expandPayment, setExpandPayment] = useState(true);
+
   const productOptions = useMemo(() => {
     return availableProducts.map((p) => ({
       id: p.id,
@@ -119,7 +125,6 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
         CustomerService.list({ page: 1, limit: 100 }, t),
       ]);
 
-      // FIX: Xử lý cả trường hợp API trả về mảng trực tiếp hoặc object phân trang
       if (prodRes?.code === 200) {
         setAvailableProducts(Array.isArray(prodRes.result) ? prodRes.result : prodRes.result.items || []);
       }
@@ -247,8 +252,9 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
         customerId: selectedCustomer.id,
         receiptDate: date,
         paymentType: paymentMethod,
-        status: 2,
-        statusTemp: 2,
+        // Chuẩn hóa: 0 là Hóa đơn nháp
+        status: 0,
+        statusTemp: 0,
         amount: 0,
         discount: 0,
         fee: 0,
@@ -281,7 +287,6 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
     const t = await token;
     if (!t) return;
 
-    // Tìm item cũ bằng cách so sánh String(ID)
     const existing = items.find((it) => it.itemType === "product" && String(it.productId) === String(prod.id));
     const newQty = existing ? existing.qty + 1 : 1;
 
@@ -390,7 +395,9 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
 
     const safeTempAmount = tempAmount || 0;
     const safeDiscount = discountAmount || 0;
-    const safeFee = finalAmount; // Sử dụng biến finalAmount đã tính
+    const safeFee = finalAmount;
+
+    // Chuẩn hóa: 1 là Hoàn thành (Tiền mặt), 0 là Nháp (Chờ chuyển khoản)
     const currentStatus = paymentMethod === 2 ? 0 : 1;
 
     const payload: IInvoiceRequest = {
@@ -405,7 +412,7 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
       debt: 0,
       paymentType: paymentMethod === 2 ? 2 : 1,
       status: currentStatus,
-      statusTemp: 1,
+      statusTemp: currentStatus,
       receiptDate: date,
       customerId: selectedCustomer.id,
       userId: 0,
@@ -416,7 +423,21 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
 
     if (paymentMethod === 2) {
       const t = await token;
-      if (t) await InvoiceService.update(payload, t);
+      if (t) {
+        // Cập nhật hóa đơn thành Nháp trước
+        await InvoiceService.update(payload, t);
+        // Lấy link thanh toán
+        try {
+          const payRes = await PaymentService.payment({ invoiceId: dbId, amount: safeFee }, t);
+          if (payRes?.code === 200 && payRes.result) {
+            Linking.openURL(payRes.result);
+          } else {
+            toast.show("Không thể lấy link thanh toán lúc này");
+          }
+        } catch (error) {
+          console.error("Lỗi tạo thanh toán:", error);
+        }
+      }
       onSubmit(payload);
     } else {
       onSubmit(payload);
@@ -424,7 +445,6 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
     setLoading(false);
   };
 
-  // Tính toán final amount để dùng chung
   const finalAmount = useMemo(() => {
     const base = apiTotalAmount > 0 ? apiTotalAmount : tempAmount;
     return base - discountAmount > 0 ? base - discountAmount : 0;
@@ -474,7 +494,7 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
           </View>
         </View>
       ) : (
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={styles.modalContainer} edges={["top", "left", "right"]}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={onClose} hitSlop={10}>
               <Ionicons name="close" size={24} color={COLORS.text} />
@@ -484,186 +504,230 @@ export default function ModalInvoice({ type, shown, item, onClose, onSubmit, onD
           </View>
 
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-            <ScrollView style={styles.modalBody} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-              {/* CUSTOMER SELECTION */}
-              <Text style={styles.sectionTitle}>Khách hàng</Text>
-              {!selectedCustomer ? (
-                <SelectCustom
-                  placeholder="Tìm khách hàng (Tên, SĐT)..."
-                  options={customerOptions.map((c: any) => ({ id: c.id, name: `${c.name} - ${c.phone}` }))}
-                  value={undefined}
-                  onChange={(opt) => {
-                    const fullCus = customerOptions.find((c: any) => String(c.id) === String(opt.id));
-                    handleCustomerChange(fullCus || opt, true);
-                  }}
-                  disabled={isViewOnly || type === "edit"}
-                />
-              ) : (
-                <View style={styles.customerCardNew}>
-                  <View style={styles.customerHeader}>
-                    <View style={styles.customerAvatar}>
-                      <Ionicons name="person" size={24} color={COLORS.info} />
-                    </View>
-                    <View>
-                      <Text style={styles.customerNameLarge}>{selectedCustomer.name}</Text>
-                      <Text style={styles.customerCode}>ID: {selectedCustomer.id}</Text>
-                    </View>
-                    {!isViewOnly && type === "add" && (
-                      <TouchableOpacity
-                        style={styles.changeCustomerBtnAbs}
-                        onPress={() => {
-                          setSelectedCustomer(null);
-                          setDbId(undefined);
-                          setItems([]);
+            <ScrollView
+              style={styles.modalBody}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled" // Thêm thuộc tính này
+            >
+              {/* 1. CUSTOMER SECTION */}
+              <View style={styles.accordionItem}>
+                <TouchableOpacity style={styles.accordionHeader} onPress={() => setExpandCustomer(!expandCustomer)}>
+                  <View style={styles.iconBox}>
+                    <Ionicons name="person-outline" size={18} color={COLORS.info} />
+                  </View>
+                  <Text style={styles.accordionTitle}>Khách hàng</Text>
+                  <Ionicons name={expandCustomer ? "chevron-up" : "chevron-down"} size={20} color={COLORS.textGray} />
+                </TouchableOpacity>
+                {expandCustomer && (
+                  <View style={styles.accordionContent}>
+                    {!selectedCustomer ? (
+                      <SelectCustom
+                        placeholder="Tìm khách hàng (Tên, SĐT)..."
+                        options={customerOptions.map((c: any) => ({ id: c.id, name: `${c.name} - ${c.phone}` }))}
+                        value={undefined}
+                        onChange={(opt: any) => {
+                          const fullCus = customerOptions.find((c: any) => String(c.id) === String(opt.id));
+                          handleCustomerChange(fullCus || opt, true);
                         }}
-                      >
-                        <Text style={styles.changeBtnText}>Thay đổi</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  <View style={styles.customerDetailRow}>
-                    <Ionicons name="call-outline" size={16} color={COLORS.textGray} />
-                    <Text style={styles.customerDetailText}>{selectedCustomer.phone || "Chưa có SĐT"}</Text>
-                  </View>
-                  <View style={styles.customerDetailRow}>
-                    <Ionicons name="mail-outline" size={16} color={COLORS.textGray} />
-                    <Text style={styles.customerDetailText}>{selectedCustomer.email || "Chưa có Email"}</Text>
-                  </View>
-                </View>
-              )}
-
-              {/* ITEMS SECTION */}
-              <Text style={styles.sectionTitle}>Chi tiết đơn hàng</Text>
-              {!isViewOnly && (
-                <View style={styles.actionButtonsContainer}>
-                  <View style={{ flex: 1 }}>
-                    <SelectCustom
-                      placeholder="+ Sản phẩm"
-                      options={productOptions}
-                      value={undefined}
-                      onChange={(opt) => {
-                        const p = availableProducts.find((i: any) => String(i.id) === String(opt.id));
-                        if (p) handleAddProductToDraft(p);
-                      }}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <SelectCustom
-                      placeholder="+ Dịch vụ"
-                      options={serviceOptions}
-                      value={undefined}
-                      onChange={(opt) => {
-                        const s = availableServices.find((i: any) => String(i.id) === String(opt.id));
-                        if (s) handleAddServiceToDraft(s);
-                      }}
-                    />
-                  </View>
-                </View>
-              )}
-
-              {loadingItems ? (
-                <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
-              ) : items.length > 0 ? (
-                items.map((itm) => (
-                  <View key={`${itm.itemType}_${itm.id}`} style={styles.itemCard}>
-                    <Image
-                      source={{ uri: itm.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(itm.name || "I")}&background=random` }}
-                      style={styles.itemImage}
-                    />
-                    <View style={styles.itemInfo}>
-                      <Text style={styles.itemName} numberOfLines={1}>
-                        {itm.name || (itm.itemType === "product" ? itm.productName : itm.serviceName)}
-                      </Text>
-                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                        <View style={{ flexDirection: "row", alignItems: "center" }}>
-                          <View style={styles.qtyBadge}>
-                            <Text style={styles.qtyText}>x{itm.qty}</Text>
+                        disabled={isViewOnly || type === "edit"}
+                      />
+                    ) : (
+                      <View style={[styles.customerCardNew, { marginBottom: 0 }]}>
+                        <View style={styles.customerHeader}>
+                          <View style={styles.customerAvatar}>
+                            <Ionicons name="person" size={24} color={COLORS.info} />
                           </View>
-                          <Text style={{ fontSize: 13, color: COLORS.textGray }}>Đơn giá: {formatMoney(itm.price)}</Text>
+                          <View>
+                            <Text style={styles.customerNameLarge}>{selectedCustomer.name}</Text>
+                            {/* <Text style={styles.customerCode}>ID: {selectedCustomer.id}</Text> */}
+                          </View>
+                          {!isViewOnly && type === "add" && (
+                            <TouchableOpacity
+                              style={styles.changeCustomerBtnAbs}
+                              onPress={() => {
+                                setSelectedCustomer(null);
+                                setDbId(undefined);
+                                setItems([]);
+                              }}
+                            >
+                              <Text style={styles.changeBtnText}>Thay đổi</Text>
+                            </TouchableOpacity>
+                          )}
                         </View>
-                        <Text style={styles.priceText}>{formatMoney(itm.fee)}</Text>
+
+                        <View style={styles.customerDetailRow}>
+                          <Ionicons name="call-outline" size={16} color={COLORS.textGray} />
+                          <Text style={styles.customerDetailText}>{selectedCustomer.phone || "Chưa có SĐT"}</Text>
+                        </View>
+                        <View style={styles.customerDetailRow}>
+                          <Ionicons name="mail-outline" size={16} color={COLORS.textGray} />
+                          <Text style={styles.customerDetailText}>{selectedCustomer.email || "Chưa có Email"}</Text>
+                        </View>
                       </View>
-                    </View>
-                    {!isViewOnly && (
-                      <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmDelete(itm.id, itm.itemType)}>
-                        <Ionicons name="trash-outline" size={20} color={COLORS.textGray} />
-                      </TouchableOpacity>
                     )}
                   </View>
-                ))
-              ) : (
-                <View style={styles.emptyState}>
-                  <Ionicons name="receipt-outline" size={48} color="#e0e0e0" />
-                  <Text style={styles.emptyText}>Chưa có sản phẩm nào</Text>
-                </View>
-              )}
-
-              {/* PAYMENT & EXTRAS */}
-              <Text style={styles.sectionTitle}>Thanh toán</Text>
-
-              <View style={styles.summaryContainer}>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Tạm tính</Text>
-                  <Text style={styles.summaryValue}>{formatMoney(tempAmount)}</Text>
-                </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Giảm giá</Text>
-                  <Text style={[styles.summaryValue, { color: COLORS.success }]}>-{formatMoney(discountAmount)}</Text>
-                </View>
-                <View style={styles.divider} />
-                <View style={styles.summaryRow}>
-                  <Text style={styles.totalLabel}>TỔNG CỘNG</Text>
-                  <Text style={styles.totalValue}>{formatMoney(finalAmount)}</Text>
-                </View>
+                )}
               </View>
 
-              <View style={styles.cardContainer}>
-                <View style={styles.voucherRow}>
-                  <TextInput
-                    style={styles.voucherInput}
-                    placeholder="Mã giảm giá"
-                    value={voucherCode}
-                    onChangeText={(t) => setVoucherCode(t.toUpperCase())}
-                    editable={!isViewOnly}
-                  />
-                  {!isViewOnly && (
-                    <TouchableOpacity style={styles.applyBtn} onPress={handleApplyVoucher} disabled={!dbId}>
-                      <Text style={styles.applyBtnText}>Áp dụng</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                <View style={styles.paymentRow}>
-                  <TouchableOpacity
-                    style={[styles.paymentOption, paymentMethod === 1 && styles.paymentOptionActive]}
-                    onPress={() => !isViewOnly && setPaymentMethod(1)}
-                  >
-                    <Ionicons name="cash-outline" size={20} color={paymentMethod === 1 ? COLORS.primary : COLORS.textGray} />
-                    <Text style={[styles.paymentText, paymentMethod === 1 && styles.paymentTextActive]}>Tiền mặt</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.paymentOption, paymentMethod === 2 && styles.paymentOptionActive]}
-                    onPress={() => !isViewOnly && setPaymentMethod(2)}
-                  >
-                    <Ionicons name="card-outline" size={20} color={paymentMethod === 2 ? COLORS.primary : COLORS.textGray} />
-                    <Text style={[styles.paymentText, paymentMethod === 2 && styles.paymentTextActive]}>Chuyển khoản</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={{ height: 12 }} />
-                <TextInput
-                  style={styles.inputMulti}
-                  multiline
-                  value={notes}
-                  onChangeText={setNotes}
-                  editable={!isViewOnly}
-                  placeholder="Ghi chú hóa đơn..."
-                />
+              {/* 2. ITEMS SECTION */}
+              <View style={styles.accordionItem}>
+                <TouchableOpacity style={styles.accordionHeader} onPress={() => setExpandItems(!expandItems)}>
+                  <View style={[styles.iconBox, { backgroundColor: "#fff3e0" }]}>
+                    <Ionicons name="cart-outline" size={18} color="#ff9800" />
+                  </View>
+                  <Text style={styles.accordionTitle}>Chi tiết đơn hàng</Text>
+                  <Ionicons name={expandItems ? "chevron-up" : "chevron-down"} size={20} color={COLORS.textGray} />
+                </TouchableOpacity>
+                {expandItems && (
+                  <View style={styles.accordionContent}>
+                    {!isViewOnly && (
+                      <View style={styles.actionButtonsContainer}>
+                        <View style={{ flex: 1 }}>
+                          <SelectCustom
+                            placeholder="+ Sản phẩm"
+                            options={productOptions}
+                            value={undefined}
+                            onChange={(opt: any) => {
+                              const p = availableProducts.find((i: any) => String(i.id) === String(opt.id));
+                              if (p) handleAddProductToDraft(p);
+                            }}
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <SelectCustom
+                            placeholder="+ Dịch vụ"
+                            options={serviceOptions}
+                            value={undefined}
+                            onChange={(opt: any) => {
+                              const s = availableServices.find((i: any) => String(i.id) === String(opt.id));
+                              if (s) handleAddServiceToDraft(s);
+                            }}
+                          />
+                        </View>
+                      </View>
+                    )}
+
+                    {loadingItems ? (
+                      <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 20 }} />
+                    ) : items.length > 0 ? (
+                      items.map((itm) => (
+                        <View key={`${itm.itemType}_${itm.id}`} style={[styles.itemCard, { marginBottom: 10 }]}>
+                          <Image
+                            source={{
+                              uri: itm.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(itm.name || "I")}&background=random`,
+                            }}
+                            style={styles.itemImage}
+                          />
+                          <View style={styles.itemInfo}>
+                            <Text style={styles.itemName} numberOfLines={1}>
+                              {itm.name || (itm.itemType === "product" ? itm.productName : itm.serviceName)}
+                            </Text>
+                            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                <View style={styles.qtyBadge}>
+                                  <Text style={styles.qtyText}>x{itm.qty}</Text>
+                                </View>
+                                <Text style={{ fontSize: 13, color: COLORS.textGray }}>Đơn giá: {formatMoney(itm.price)}</Text>
+                              </View>
+                              <Text style={styles.priceText}>{formatMoney(itm.fee)}</Text>
+                            </View>
+                          </View>
+                          {!isViewOnly && (
+                            <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmDelete(itm.id, itm.itemType)}>
+                              <Ionicons name="trash-outline" size={20} color={COLORS.textGray} />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Ionicons name="receipt-outline" size={48} color="#e0e0e0" />
+                        <Text style={styles.emptyText}>Chưa có sản phẩm nào</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+
+              {/* 3. PAYMENT & EXTRAS SECTION */}
+              <View style={styles.accordionItem}>
+                <TouchableOpacity style={styles.accordionHeader} onPress={() => setExpandPayment(!expandPayment)}>
+                  <View style={[styles.iconBox, { backgroundColor: "#e8f5e9" }]}>
+                    <Ionicons name="wallet-outline" size={18} color={COLORS.success} />
+                  </View>
+                  <Text style={styles.accordionTitle}>Thanh toán</Text>
+                  <Ionicons name={expandPayment ? "chevron-up" : "chevron-down"} size={20} color={COLORS.textGray} />
+                </TouchableOpacity>
+                {expandPayment && (
+                  <View style={styles.accordionContent}>
+                    <View style={[styles.summaryContainer, { borderWidth: 0, padding: 0, paddingBottom: 16 }]}>
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Tạm tính</Text>
+                        <Text style={styles.summaryValue}>{formatMoney(tempAmount)}</Text>
+                      </View>
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Giảm giá</Text>
+                        <Text style={[styles.summaryValue, { color: COLORS.success }]}>-{formatMoney(discountAmount)}</Text>
+                      </View>
+                      <View style={styles.divider} />
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.totalLabel}>TỔNG CỘNG</Text>
+                        <Text style={styles.totalValue}>{formatMoney(finalAmount)}</Text>
+                      </View>
+                    </View>
+
+                    <View style={[styles.cardContainer, { borderWidth: 0, padding: 0, marginBottom: 0 }]}>
+                      <View style={styles.voucherRow}>
+                        <TextInput
+                          style={styles.voucherInput}
+                          placeholder="Mã giảm giá"
+                          placeholderTextColor={COLORS.textGray}
+                          value={voucherCode}
+                          onChangeText={(t) => setVoucherCode(t.toUpperCase())}
+                          editable={!isViewOnly}
+                        />
+                        {!isViewOnly && (
+                          <TouchableOpacity style={styles.applyBtn} onPress={handleApplyVoucher} disabled={!dbId}>
+                            <Text style={styles.applyBtnText}>Áp dụng</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      <View style={styles.paymentRow}>
+                        <TouchableOpacity
+                          style={[styles.paymentOption, paymentMethod === 1 && styles.paymentOptionActive]}
+                          onPress={() => !isViewOnly && setPaymentMethod(1)}
+                        >
+                          <Ionicons name="cash-outline" size={20} color={paymentMethod === 1 ? COLORS.primary : COLORS.textGray} />
+                          <Text style={[styles.paymentText, paymentMethod === 1 && styles.paymentTextActive]}>Tiền mặt</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.paymentOption, paymentMethod === 2 && styles.paymentOptionActive]}
+                          onPress={() => !isViewOnly && setPaymentMethod(2)}
+                        >
+                          <Ionicons name="card-outline" size={20} color={paymentMethod === 2 ? COLORS.primary : COLORS.textGray} />
+                          <Text style={[styles.paymentText, paymentMethod === 2 && styles.paymentTextActive]}>Chuyển khoản</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={{ height: 12 }} />
+                      <TextInput
+                        style={styles.inputMulti}
+                        multiline
+                        value={notes}
+                        onChangeText={setNotes}
+                        editable={!isViewOnly}
+                        placeholder="Ghi chú hóa đơn..."
+                        placeholderTextColor={COLORS.textGray}
+                      />
+                    </View>
+                  </View>
+                )}
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
 
           {!isViewOnly && (
-            <View style={[styles.bottomDock, { paddingBottom: Platform.OS === "ios" ? 0 : 16 }]}>
+            <View style={[styles.bottomDock, { paddingBottom: Platform.OS === "ios" ? 40 : 24 }]}>
               <View style={styles.dockTotal}>
                 <Text style={styles.dockLabel}>Tổng thanh toán</Text>
                 <Text style={styles.dockValue}>{formatMoney(finalAmount)}</Text>
