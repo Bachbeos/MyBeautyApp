@@ -427,13 +427,28 @@ export default function ModalCustomer({ type, shown, item, onClose, onSubmit, on
                       <Text style={styles.label}>
                         Họ tên <Text style={{ color: COLORS.danger }}>*</Text>
                       </Text>
-                      <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nhập họ tên" editable={!isDetail} />
+                      <TextInput
+                        style={styles.input}
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="Nhập họ tên"
+                        placeholderTextColor={COLORS.textGray}
+                        editable={!isDetail}
+                      />
                     </View>
                   </View>
                   <View style={[styles.row, { marginTop: 12 }]}>
                     <View style={styles.col}>
                       <Text style={styles.label}>Tuổi</Text>
-                      <TextInput style={styles.input} value={age} onChangeText={setAge} keyboardType="numeric" placeholder="0" editable={!isDetail} />
+                      <TextInput
+                        style={styles.input}
+                        value={age}
+                        onChangeText={setAge}
+                        keyboardType="numeric"
+                        placeholder="Nhập tuổi"
+                        placeholderTextColor={COLORS.textGray}
+                        editable={!isDetail}
+                      />
                     </View>
                     <View style={styles.col}>
                       <Text style={styles.label}>Giới tính</Text>
@@ -449,18 +464,18 @@ export default function ModalCustomer({ type, shown, item, onClose, onSubmit, on
                       </View>
                     </View>
                   </View>
-                  <View style={[styles.row, { marginTop: 12 }]}>
+                  <View style={[{ marginTop: 12 }]}>
                     <View style={styles.col}>
-                      <Text style={styles.label}>Nguồn khách</Text>
+                      <Text style={styles.label}>Nguồn khách hàng</Text>
                       <SelectCustom
                         options={sourceOptions}
                         value={selectedSource?.id}
                         onChange={(opt) => setSelectedSource(opt)}
                         disabled={isDetail}
-                        placeholder="Chọn nguồn"
+                        placeholder="Chọn nguồn khách hàng"
                       />
                     </View>
-                    <View style={styles.col}>
+                    <View style={styles.formGroup}>
                       <DatePickerCustom label="Ngày sinh" value={birthday} onConfirm={(d) => setBirthday(d.toISOString())} disabled={isDetail} />
                     </View>
                   </View>
@@ -481,17 +496,25 @@ export default function ModalCustomer({ type, shown, item, onClose, onSubmit, on
                 <View style={styles.accordionContent}>
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>Địa chỉ</Text>
-                    <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="Nhập địa chỉ" editable={!isDetail} />
+                    <TextInput
+                      style={styles.input}
+                      value={address}
+                      onChangeText={setAddress}
+                      placeholder="Nhập địa chỉ"
+                      placeholderTextColor={COLORS.textGray}
+                      editable={!isDetail}
+                    />
                   </View>
                   <View style={styles.row}>
                     <View style={styles.col}>
-                      <Text style={styles.label}>Điện thoại</Text>
+                      <Text style={styles.label}>Số điện thoại</Text>
                       <TextInput
                         style={styles.input}
                         value={phone}
                         onChangeText={setPhone}
                         keyboardType="phone-pad"
-                        placeholder="SĐT"
+                        placeholder="Nhập số điện thoại"
+                        placeholderTextColor={COLORS.textGray}
                         editable={!isDetail}
                       />
                     </View>
@@ -502,7 +525,8 @@ export default function ModalCustomer({ type, shown, item, onClose, onSubmit, on
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
-                        placeholder="Email"
+                        placeholder="Nhập email"
+                        placeholderTextColor={COLORS.textGray}
                         editable={!isDetail}
                       />
                     </View>
@@ -515,6 +539,7 @@ export default function ModalCustomer({ type, shown, item, onClose, onSubmit, on
                       onChangeText={setNote}
                       multiline
                       placeholder="Ghi chú..."
+                      placeholderTextColor={COLORS.textGray}
                       editable={!isDetail}
                     />
                   </View>

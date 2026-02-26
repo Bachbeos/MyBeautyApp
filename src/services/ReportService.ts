@@ -55,6 +55,28 @@ export interface IApiResponse<T> {
   result: T;
 }
 
+export interface IAvgInterestItem extends Record<string, unknown> {
+  // Thêm phần này
+  customerId: number;
+  customerName: string;
+  totalCall: number;
+  avgInterestLevel: number;
+}
+
+export interface IAvgInterestResponse {
+  items: IAvgInterestItem[];
+  page: number;
+  size: number;
+  total: number;
+}
+
+// Interface cho biểu đồ cột đôi
+export interface IInterestBarData {
+  month: number;
+  totalCustomer: number;
+  highInterestCustomer: number;
+}
+
 export default {
   // 1. Báo cáo khách hàng theo tháng
   getCustomerByMonth: (params: IReportBaseParams, token: string, signal?: AbortSignal) => {
@@ -102,5 +124,21 @@ export default {
         "Content-Type": "application/json",
       },
     }).then((res) => res.json() as Promise<IApiResponse<IFrequencyResponse>>);
+  },
+
+  // 5. Mức độ quan tâm trung bình (Bảng)
+  getCallHistoryAvg: (params: { year: number; month?: number; page?: number; size?: number; keyword?: string }, token: string) => {
+    return fetch(`${urlsApi.report.callHistoryAvg}${convertParamsToString(params)}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    }).then((res) => res.json() as Promise<IApiResponse<IAvgInterestResponse>>);
+  },
+
+  // 6. Biểu đồ cột đôi so sánh quan tâm
+  getInterestBar: (params: { year: number; minAvgInterest: number }, token: string) => {
+    return fetch(`${urlsApi.report.callHistoryInterest}${convertParamsToString(params)}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    }).then((res) => res.json() as Promise<IApiResponse<IInterestBarData[]>>);
   },
 };

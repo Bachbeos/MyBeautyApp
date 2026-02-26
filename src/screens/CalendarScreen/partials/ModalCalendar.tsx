@@ -222,37 +222,49 @@ export default function ModalCalendar({
 
                 {/* Ẩn hiện Customer/User theo loại lịch */}
                 {scheduleType !== 3 && (
-                  <View style={styles.row}>
-                    <View style={styles.col}>
+                  <>
+                    {/* Khách hàng */}
+                    <View style={styles.formGroup}>
                       {renderLabel("Khách hàng")}
                       <SelectCustom
                         options={customerOptions}
                         value={customerId}
-                        onChange={(opt) => setCustomerId(Number(opt.id))}
-                        placeholder="Chọn khách"
+                        onChange={(opt: any) => setCustomerId(Number(opt.id))}
+                        placeholder="Chọn khách hàng"
                         disabled={isViewOnly}
                       />
                     </View>
-                    <View style={styles.col}>
+
+                    {/* Nhân viên */}
+                    <View style={styles.formGroup}>
                       {renderLabel("Nhân viên")}
                       <SelectCustom
                         options={userOptions}
                         value={userId}
-                        onChange={(opt) => setUserId(Number(opt.id))}
+                        onChange={(opt: any) => setUserId(Number(opt.id))}
                         placeholder="Chọn nhân viên"
                         disabled={isViewOnly}
                       />
                     </View>
-                  </View>
+                  </>
                 )}
 
-                <View style={[styles.row, { marginTop: scheduleType !== 3 ? 16 : 0 }]}>
-                  <View style={styles.col}>
-                    <DatePickerCustom label="Bắt đầu" value={startDate} onConfirm={setStartDate} mode="datetime" required disabled={isViewOnly} />
-                  </View>
-                  <View style={styles.col}>
-                    <DatePickerCustom label="Kết thúc" value={endDate} onConfirm={setEndDate} mode="datetime" required disabled={isViewOnly} />
-                  </View>
+                <View style={[{ marginTop: scheduleType !== 3 ? 16 : 0 }]}>
+                  <>
+                    <View style={styles.formGroup}>
+                      <DatePickerCustom
+                        label="Ngày bắt đầu"
+                        value={startDate}
+                        onConfirm={setStartDate}
+                        mode="datetime"
+                        required
+                        disabled={isViewOnly}
+                      />
+                    </View>
+                    <View style={styles.formGroup}>
+                      <DatePickerCustom label="Ngày kết thúc" value={endDate} onConfirm={setEndDate} mode="datetime" required disabled={isViewOnly} />
+                    </View>
+                  </>
                 </View>
 
                 <View style={styles.formGroup}>

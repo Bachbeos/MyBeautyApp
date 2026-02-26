@@ -89,7 +89,7 @@ export const styles = StyleSheet.create({
   formGroup: { marginBottom: 16 },
   row: { flexDirection: "row", gap: 12 },
   col: { flex: 1 },
-  label: { fontSize: 14, fontWeight: "600", marginBottom: 6, color: COLORS.text },
+  label: { fontSize: 14, fontWeight: "500", marginBottom: 6, color: COLORS.text },
 
   input: {
     borderWidth: 1,

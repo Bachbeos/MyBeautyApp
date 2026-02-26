@@ -224,7 +224,7 @@ export default function CalendarScreen() {
 
         <View style={styles.navGroup}>
           <TouchableOpacity style={[styles.viewModeBtn, mode === "day" && styles.viewModeBtnActive]} onPress={() => setMode("day")}>
-            <Text style={[styles.viewModeText, mode === "day" && styles.viewModeTextActive]}>Ngày</Text>
+            <Text style={[styles.viewModeText, mode === "day" && styles.viewModeTextActive]}>1 Ngày</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.viewModeBtn, mode === "3days" && styles.viewModeBtnActive]} onPress={() => setMode("3days")}>
             <Text style={[styles.viewModeText, mode === "3days" && styles.viewModeTextActive]}>3 Ngày</Text>

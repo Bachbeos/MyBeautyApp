@@ -18,7 +18,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useToast } from "expo-toast";
 import { styles, COLORS } from "../HistoryCall.styles";
 
-import CallHistoryService from "../../../services/CallHistoryService";
 import UserService from "../../../services/UserService";
 import CustomerService from "../../../services/CustomerService";
 import { getToken } from "../../../utils/common";
@@ -95,7 +94,6 @@ export default function ModalHistoryCall({ type, shown, item, onClose, onSubmit,
         CustomerService.list({ page: 1, limit: 1000 }, token),
       ]);
 
-      // FIX: Cập nhật logic lấy tên nhân viên (thêm u.name, u.fullName, u.email)
       if (userRes?.code === 200) {
         setUserOptions(
           (userRes.result.items || []).map((u: any) => ({
@@ -105,7 +103,6 @@ export default function ModalHistoryCall({ type, shown, item, onClose, onSubmit,
         );
       }
 
-      // FIX: Cập nhật logic lấy tên khách hàng cho chắc chắn
       if (customerRes?.code === 200) {
         setCustomerOptions(
           (customerRes.result.items || []).map((c: any) => ({
@@ -220,97 +217,98 @@ export default function ModalHistoryCall({ type, shown, item, onClose, onSubmit,
               </View>
             ) : (
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-                {/* FORM INPUTS */}
-                <View style={styles.row}>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>
-                      Nhân viên <Text style={{ color: COLORS.danger }}>*</Text>
-                    </Text>
-                    <SelectCustom
-                      options={userOptions}
-                      value={selectedUser?.id}
-                      onChange={setSelectedUser}
-                      disabled={isDetail}
-                      placeholder="Chọn nhân viên"
-                    />
-                  </View>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>
-                      Khách hàng <Text style={{ color: COLORS.danger }}>*</Text>
-                    </Text>
-                    <SelectCustom
-                      options={customerOptions}
-                      value={selectedCustomer?.id}
-                      onChange={setSelectedCustomer}
-                      disabled={isDetail}
-                      placeholder="Chọn khách hàng"
-                    />
+                {/* Nhân viên */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>
+                    Nhân viên <Text style={{ color: COLORS.danger }}>*</Text>
+                  </Text>
+                  <SelectCustom
+                    options={userOptions}
+                    value={selectedUser?.id}
+                    onChange={setSelectedUser}
+                    disabled={isDetail}
+                    placeholder="Chọn nhân viên"
+                  />
+                </View>
+
+                {/* Khách hàng */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>
+                    Khách hàng <Text style={{ color: COLORS.danger }}>*</Text>
+                  </Text>
+                  <SelectCustom
+                    options={customerOptions}
+                    value={selectedCustomer?.id}
+                    onChange={setSelectedCustomer}
+                    disabled={isDetail}
+                    placeholder="Chọn khách hàng"
+                  />
+                </View>
+
+                {/* Loại cuộc gọi */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Loại cuộc gọi</Text>
+                  <View style={styles.radioGroup}>
+                    <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setCallType(1)}>
+                      <Ionicons name={callType === 1 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
+                      <Ionicons name="call-outline" size={18} color={COLORS.text} />
+                      <Text style={styles.radioLabel}>Audio</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setCallType(2)}>
+                      <Ionicons name={callType === 2 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
+                      <Ionicons name="videocam-outline" size={18} color={COLORS.text} />
+                      <Text style={styles.radioLabel}>Video</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
 
-                <View style={[styles.row, { marginTop: 12 }]}>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>Loại cuộc gọi</Text>
-                    <View style={styles.radioGroup}>
-                      <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setCallType(1)}>
-                        <Ionicons name={callType === 1 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
-                        <Ionicons name="call-outline" size={18} color={COLORS.text} />
-                        <Text style={styles.radioLabel}>Audio</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setCallType(2)}>
-                        <Ionicons name={callType === 2 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
-                        <Ionicons name="videocam-outline" size={18} color={COLORS.text} />
-                        <Text style={styles.radioLabel}>Video</Text>
-                      </TouchableOpacity>
-                    </View>
+                {/* Trạng thái */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Trạng thái</Text>
+                  <View style={styles.radioGroup}>
+                    <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setStatus(1)}>
+                      <Ionicons name={status === 1 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
+                      <Text style={styles.radioLabel}>Hoạt động</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setStatus(0)}>
+                      <Ionicons name={status === 0 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
+                      <Text style={styles.radioLabel}>Ngưng hoạt động</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
 
-                <View style={[styles.row, { marginTop: 12 }]}>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>Trạng thái</Text>
-                    <View style={styles.radioGroup}>
-                      <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setStatus(1)}>
-                        <Ionicons name={status === 1 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
-                        <Text style={styles.radioLabel}>Hoạt động</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.radioItem} onPress={() => !isDetail && setStatus(0)}>
-                        <Ionicons name={status === 0 ? "radio-button-on" : "radio-button-off"} size={20} color={COLORS.primary} />
-                        <Text style={styles.radioLabel}>Ngưng</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                {/* Kết quả */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Kết quả</Text>
+                  <SelectCustom
+                    options={outcomeOptions}
+                    value={outcome}
+                    onChange={(opt: any) => setOutcome(Number(opt.id))}
+                    disabled={isDetail}
+                    placeholder="Chọn kết quả"
+                  />
                 </View>
 
-                <View style={[styles.row, { marginTop: 12 }]}>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>Kết quả</Text>
-                    <SelectCustom
-                      options={outcomeOptions}
-                      value={outcome}
-                      onChange={(opt) => setOutcome(Number(opt.id))}
-                      disabled={isDetail}
-                      placeholder="Chọn kết quả"
-                    />
-                  </View>
-                  <View style={styles.col}>
-                    <Text style={styles.label}>Thời lượng (s)</Text>
-                    <TextInput
-                      style={[styles.input, (isDetail || outcome === 3) && styles.inputDisabled]}
-                      value={duration}
-                      onChangeText={setDuration}
-                      keyboardType="numeric"
-                      placeholder="0"
-                      editable={!isDetail && outcome !== 3}
-                    />
-                  </View>
+                {/* Thời lượng */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Thời lượng (s)</Text>
+                  <TextInput
+                    style={[styles.input, (isDetail || outcome === 3) && styles.inputDisabled]}
+                    value={duration}
+                    onChangeText={setDuration}
+                    keyboardType="numeric"
+                    placeholder="0"
+                    editable={!isDetail && outcome !== 3}
+                  />
                 </View>
 
-                <View style={[styles.formGroup, { marginTop: 12 }]}>
+                {/* Mức độ hài lòng */}
+                <View style={styles.formGroup}>
                   <Text style={styles.label}>Mức độ hài lòng</Text>
                   {renderStars()}
                 </View>
 
+                {/* Ghi chú */}
                 <View style={styles.formGroup}>
                   <Text style={styles.label}>Ghi chú</Text>
                   <TextInput
@@ -319,6 +317,7 @@ export default function ModalHistoryCall({ type, shown, item, onClose, onSubmit,
                     onChangeText={setNote}
                     multiline
                     placeholder="Nội dung cuộc gọi..."
+                    placeholderTextColor={COLORS.textGray}
                     editable={!isDetail}
                   />
                 </View>

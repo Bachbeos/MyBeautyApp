@@ -270,25 +270,25 @@ const ModalCustomerSetting: React.FC<ModalProps> = ({ type, shown, item, onClose
             ) : (
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                 {/* --- BASIC INFO --- */}
-                <View style={styles.row}>
-                  <View style={styles.col}>
-                    {renderLabel("Tên trường", true)}
+                <View>
+                  <View style={styles.formGroup}>
+                    {renderLabel("Tên trường dữ liệu", true)}
                     <TextInput
                       style={[styles.input, isDetail && styles.inputDisabled]}
                       value={name}
                       onChangeText={setName}
                       editable={!isDetail}
-                      placeholder="Tên trường"
+                      placeholder="Tên trường dữ liệu"
                     />
                   </View>
                   <View style={styles.col}>
-                    {renderLabel("Mã trường", true)}
+                    {renderLabel("Mã trường dữ liệu", true)}
                     <TextInput
                       style={[styles.input, isDetail && styles.inputDisabled]}
                       value={fieldName}
                       onChangeText={setFieldName}
                       editable={!isDetail}
-                      placeholder="Mã trường"
+                      placeholder="Mã trường dữ liệu"
                     />
                   </View>
                 </View>
@@ -307,6 +307,20 @@ const ModalCustomerSetting: React.FC<ModalProps> = ({ type, shown, item, onClose
                   />
                 </View>
 
+                <View style={styles.col}>
+                  {renderLabel("Thuộc nhóm")}
+                  <SelectCustom
+                    options={parentOptions.map((p) => ({ id: p.id, name: p.name }))}
+                    value={selectedParent?.id}
+                    onChange={(opt) => {
+                      const p = parentOptions.find((i) => i.id === opt.id);
+                      setSelectedParent(p || null);
+                    }}
+                    disabled={isDetail}
+                    placeholder="Chọn nhóm cha"
+                  />
+                </View>
+
                 <View style={styles.row}>
                   <View style={styles.col}>
                     {renderLabel("Thứ tự")}
@@ -317,19 +331,6 @@ const ModalCustomerSetting: React.FC<ModalProps> = ({ type, shown, item, onClose
                       keyboardType="numeric"
                       editable={!isDetail}
                       placeholder="0"
-                    />
-                  </View>
-                  <View style={styles.col}>
-                    {renderLabel("Thuộc nhóm")}
-                    <SelectCustom
-                      options={parentOptions.map((p) => ({ id: p.id, name: p.name }))}
-                      value={selectedParent?.id}
-                      onChange={(opt) => {
-                        const p = parentOptions.find((i) => i.id === opt.id);
-                        setSelectedParent(p || null);
-                      }}
-                      disabled={isDetail}
-                      placeholder="Chọn nhóm cha"
                     />
                   </View>
                 </View>

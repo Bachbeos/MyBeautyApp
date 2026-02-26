@@ -291,8 +291,8 @@ const ModalProduct: React.FC<ModalProductProps> = ({ shown, type, item, onClose,
                   {!isViewOnly && <Text style={styles.avatarHint}>{uploadingImg ? "Đang tải lên..." : "Chạm để thay đổi ảnh"}</Text>}
                 </View>
 
-                <View style={[styles.row, { marginTop: 16 }]}>
-                  <View style={styles.col}>
+                <View style={[{ marginTop: 16 }]}>
+                  <View style={[styles.formGroup, { marginBottom: 16 }]}>
                     {renderLabel("Mã sản phẩm", true)}
                     <TextInput
                       style={[styles.input, isViewOnly && styles.inputDisabled]}
@@ -303,7 +303,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({ shown, type, item, onClose,
                       editable={!isViewOnly}
                     />
                   </View>
-                  <View style={[styles.col, { flex: 1 }]}>
+                  <View style={[styles.formGroup, { flex: 1 }]}>
                     {renderLabel("Tên sản phẩm", true)}
                     <TextInput
                       style={[styles.input, isViewOnly && styles.inputDisabled]}
@@ -316,8 +316,8 @@ const ModalProduct: React.FC<ModalProductProps> = ({ shown, type, item, onClose,
                   </View>
                 </View>
 
-                <View style={[styles.row, { marginTop: 16 }]}>
-                  <View style={styles.col}>
+                <View style={[{ marginTop: 16 }]}>
+                  <View style={[styles.formGroup, { marginTop: -16 }]}>
                     <SelectCustom
                       label="Danh mục"
                       options={categoryOptions}
@@ -327,7 +327,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({ shown, type, item, onClose,
                       placeholder="Chọn danh mục"
                     />
                   </View>
-                  <View style={styles.col}>
+                  <View style={[styles.formGroup, { marginTop: -16 }]}>
                     <SelectCustom
                       label="Đơn vị tính"
                       options={unitOptions}

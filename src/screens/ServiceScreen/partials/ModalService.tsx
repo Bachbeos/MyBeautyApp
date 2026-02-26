@@ -472,7 +472,8 @@ const ModalService: React.FC<ModalServiceProps> = ({ shown, type, item, onClose,
                           <View style={styles.formGroup}>
                             <TextInput
                               style={[styles.input, { paddingVertical: 6, fontSize: 14 }]}
-                              placeholder="Tên gói combo (VD: Gói 10 buổi)"
+                              placeholder="Tên gói combo"
+                              placeholderTextColor={COLORS.textGray}
                               value={item.name}
                               onChangeText={(t) => updateComboRow(index, "name", t)}
                               editable={!isViewOnly}

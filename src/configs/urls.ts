@@ -131,6 +131,8 @@ export const urlsApi = {
     customerBySource: `${baseUrl}/report/customer/by-source`,
     revenueByMonth: `${baseUrl}/report/invoice/monthly-revenue`,
     frequency: `${baseUrl}/report/invoice/frequency`,
+    callHistoryAvg: `${baseUrl}/report/callHistory/avg-interest`,
+    callHistoryInterest: `${baseUrl}/report/callHistory/interest-bar`,
   },
   upload_image: `${baseUrl}/file/upload`,
 };
