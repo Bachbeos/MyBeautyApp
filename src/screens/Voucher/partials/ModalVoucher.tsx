@@ -166,7 +166,9 @@ const ModalVoucher: React.FC<ModalVoucherProps> = ({ shown, type, item, onClose,
     const day = `0${date.getDate()}`.slice(-2);
     const hours = `0${date.getHours()}`.slice(-2);
     const minutes = `0${date.getMinutes()}`.slice(-2);
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
+    const seconds = "00";
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   };
 
   return (
