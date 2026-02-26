@@ -12,6 +12,8 @@ import { useSidebar } from "../../components/Sidebar/SidebarContext";
 import SelectCustom from "../../components/SelectCustom/SelectCustom";
 import ReportService, { ICustomerByMonth, IFrequencyItem } from "../../services/ReportService";
 import { getToken } from "../../utils/common";
+import * as SecureStore from "expo-secure-store";
+import ErrorPage505 from "../ErrorPage505/ErrorPage505";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -44,6 +46,20 @@ export default function LeadReportScreen() {
   // Data mới bổ sung giống Web
   const [interestData, setInterestData] = useState<number[]>(new Array(12).fill(0));
   const [avgInterestData, setAvgInterestData] = useState<any[]>([]);
+
+  const [canView, setCanView] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        const valView = await SecureStore.getItemAsync("REPORT_VIEW");
+        setCanView(valView === "1");
+      } catch (error) {
+        setCanView(false);
+      }
+    };
+    loadPermissions();
+  }, []);
 
   // --- OPTIONS LỌC ---
   const yearOptions = Array.from({ length: 5 }, (_, i) => {
@@ -242,6 +258,25 @@ export default function LeadReportScreen() {
       </View>
     </View>
   );
+
+  if (canView === null) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (canView === false) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+        <Header onMenuPress={open} />
+        <View style={{ flex: 1 }}>
+          <ErrorPage505 />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
