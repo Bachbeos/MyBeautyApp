@@ -13,10 +13,25 @@ import { IUserLoginRequest } from "../../model/user/UserRequestModel";
 import UserService from "../../services/UserService";
 import PermissionService from "../../services/PermissionService";
 import { useToast } from "expo-toast";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 
+WebBrowser.maybeCompleteAuthSession();
+
 const LoginScreen = () => {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: "486014130328-d2ul4iub40vmmuv5oadmohe2d921s9dn.apps.googleusercontent.com",
+    scopes: ["openid", "profile", "email"],
+  });
+
+  useEffect(() => {
+    if (request) {
+      console.log("Redirect URI:", request.redirectUri);
+    }
+  }, [request]);
+
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +40,87 @@ const LoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const abortController = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const accessToken = response.authentication?.accessToken || response.params?.access_token;
+
+      if (accessToken) {
+        handleGoogleLogin(accessToken);
+      } else {
+        toast.show("Không lấy được access token từ Google!");
+      }
+    } else if (response?.type === "error" || response?.type === "cancel") {
+      toast.show("Đăng nhập Google thất bại hoặc bị hủy!");
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (accessToken: string) => {
+    setIsLoading(true);
+    try {
+      // Gọi API loginGoogle giống bản Web
+      const respond = await UserService.loginGoogle(accessToken);
+      if (respond?.result?.token) {
+        await handleLoginSuccess(respond.result.token);
+      } else {
+        toast.show(respond?.message || "Đăng nhập Google thất bại!");
+      }
+    } catch (error) {
+      toast.show("Lỗi kết nối đến server!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // const handleLoginSuccess = async (token: string) => {
+  //   setIsLoading(true);
+  //   try {
+  //     // 1. Lưu token
+  //     await SecureStore.setItemAsync("token", token);
+
+  //     // 2. Lấy danh sách quyền
+  //     const response = await PermissionService.resources(token);
+
+  //     if (response && Array.isArray(response.result)) {
+  //       const map: Record<string, string> = {};
+  //       response.result.forEach((item: any) => {
+  //         const code = item.code;
+  //         let actions = item.actions;
+
+  //         // Xử lý parse actions nếu là string JSON
+  //         if (typeof actions === "string" && actions.trim().startsWith("[") && actions.trim().endsWith("]")) {
+  //           try {
+  //             const parsed = JSON.parse(actions);
+  //             if (Array.isArray(parsed)) actions = parsed;
+  //           } catch (e) {
+  //             console.error("Lỗi parse action:", e);
+  //           }
+  //         }
+
+  //         if (code && Array.isArray(actions)) {
+  //           actions.forEach((act: string) => {
+  //             const key = `${code}_${act}`;
+  //             map[key] = "1"; // Lưu quyền vào map
+  //           });
+  //         }
+  //       });
+
+  //       // Lưu toàn bộ quyền vào SecureStore
+  //       const savePromises = Object.keys(map).map((k) => SecureStore.setItemAsync(k, map[k]));
+  //       await Promise.all(savePromises);
+  //     } else {
+  //       toast.show(response?.message ?? "Có lỗi xảy ra khi lấy quyền!");
+  //     }
+
+  //     toast.show("Đăng nhập thành công!");
+  //     navigation.replace("LeadReportScreen");
+  //   } catch (e) {
+  //     console.error("Lỗi trong quá trình xử lý sau đăng nhập:", e);
+  //     toast.show("Có lỗi xảy ra, vui lòng thử lại!");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleLoginSuccess = async (token: string) => {
     setIsLoading(true);
@@ -36,6 +132,39 @@ const LoginScreen = () => {
       const response = await PermissionService.resources(token);
 
       if (response && Array.isArray(response.result)) {
+        // =====================================================================
+        // BƯỚC QUAN TRỌNG: DỌN SẠCH QUYỀN CŨ TRƯỚC KHI LƯU QUYỀN MỚI
+        // Tránh lỗi tài khoản Nhân viên bị kế thừa quyền của Admin trước đó
+        // =====================================================================
+        const ALL_MODULES = [
+          "ROLE",
+          "RESOURCE",
+          "USER",
+          "PERMISSION",
+          "BRANCH",
+          "CUSTOMER_ATTRIBUTE",
+          "UNIT",
+          "INVOICE",
+          "PRODUCT",
+          "SERVICE",
+          "CUSTOMER_SOURCE",
+          "BOUGHT_PRODUCT",
+          "BOUGHT_SERVICE",
+          "CALL_HISTORY",
+          "CATEGORY_ITEM",
+          "REPORT",
+          "SCHEDULE",
+          "VOUCHER",
+          "CUSTOMER",
+        ];
+
+        // Tạo mảng chứa tất cả các key có thể có (VIEW, ADD, UPDATE, DELETE)
+        const keysToClear = ALL_MODULES.flatMap((mod) => [`${mod}_VIEW`, `${mod}_ADD`, `${mod}_UPDATE`, `${mod}_DELETE`]);
+
+        // Chạy lệnh xóa đồng loạt tất cả các key cũ khỏi bộ nhớ điện thoại
+        await Promise.all(keysToClear.map((key) => SecureStore.deleteItemAsync(key).catch(() => {})));
+        // =====================================================================
+
         const map: Record<string, string> = {};
         response.result.forEach((item: any) => {
           const code = item.code;
@@ -59,7 +188,7 @@ const LoginScreen = () => {
           }
         });
 
-        // Lưu toàn bộ quyền vào SecureStore
+        // Lưu toàn bộ quyền MỚI vào SecureStore
         const savePromises = Object.keys(map).map((k) => SecureStore.setItemAsync(k, map[k]));
         await Promise.all(savePromises);
       } else {
@@ -206,6 +335,7 @@ const LoginScreen = () => {
           <Button
             icon={<LogoGoogle width={24} height={24} />}
             buttonStyle={[styles.socialBtn, { backgroundColor: "#fff", borderWidth: 1, borderColor: "#E8E8E8" }]}
+            onPress={() => promptAsync()}
           />
           <Button icon={<Icon name="apple" type="font-awesome" color="white" />} buttonStyle={[styles.socialBtn, { backgroundColor: "#000" }]} />
         </View>
