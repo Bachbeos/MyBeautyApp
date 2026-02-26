@@ -26,14 +26,13 @@ const LoginScreen = () => {
   const toast = useToast();
   const abortController = useRef<AbortController | null>(null);
 
-  const body: IUserLoginRequest = {
-    phone,
-    plainPassword: password,
-  };
-
   const handleLoginSuccess = async (token: string) => {
+    setIsLoading(true);
     try {
+      // 1. Lưu token
       await SecureStore.setItemAsync("token", token);
+
+      // 2. Lấy danh sách quyền
       const response = await PermissionService.resources(token);
 
       if (response && Array.isArray(response.result)) {
@@ -42,6 +41,7 @@ const LoginScreen = () => {
           const code = item.code;
           let actions = item.actions;
 
+          // Xử lý parse actions nếu là string JSON
           if (typeof actions === "string" && actions.trim().startsWith("[") && actions.trim().endsWith("]")) {
             try {
               const parsed = JSON.parse(actions);
@@ -54,30 +54,55 @@ const LoginScreen = () => {
           if (code && Array.isArray(actions)) {
             actions.forEach((act: string) => {
               const key = `${code}_${act}`;
-              map[key] = "1";
+              map[key] = "1"; // Lưu quyền vào map
             });
           }
         });
 
+        // Lưu toàn bộ quyền vào SecureStore
         const savePromises = Object.keys(map).map((k) => SecureStore.setItemAsync(k, map[k]));
         await Promise.all(savePromises);
       } else {
+        toast.show(response?.message ?? "Có lỗi xảy ra khi lấy quyền!");
       }
+
+      toast.show("Đăng nhập thành công!");
+      navigation.replace("LeadReportScreen");
     } catch (e) {
       console.error("Lỗi trong quá trình xử lý sau đăng nhập:", e);
+      toast.show("Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
+      setIsLoading(false);
     }
-
-    toast.show("Đăng nhập thành công!");
-    navigation.replace("LeadReportScreen");
   };
 
   const handleSubmit = async () => {
+    // 1. Kiểm tra các trường trống
     if (!phone || !password) {
-      return toast.show("Vui lòng nhập đầy đủ thông tin!");
+      toast.show("Vui lòng nhập đầy đủ thông tin!");
+      return;
     }
 
-    setIsLoading(true);
+    // 2. Kiểm tra số điện thoại: Bắt đầu bằng 0 và có đúng 9 chữ số
+    const phoneRegex = /^0[0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      toast.show("Số điện thoại phải bắt đầu bằng số 0 và có đúng 9 chữ số!");
+      return;
+    }
 
+    // 3. Kiểm tra mật khẩu: Ít nhất 8 ký tự và 1 ký tự đặc biệt
+    const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast.show("Mật khẩu phải có ít nhất 8 ký tự và bao gồm ít nhất 1 ký tự đặc biệt!");
+      return;
+    }
+
+    const body: IUserLoginRequest = {
+      phone,
+      plainPassword: password,
+    };
+
+    setIsLoading(true);
     try {
       const respond = await UserService.login(body);
 
@@ -86,11 +111,11 @@ const LoginScreen = () => {
       } else if (respond?.code === 400) {
         toast.show(respond?.message || "Số điện thoại hoặc mật khẩu không đúng!");
       } else {
-        toast.show(respond?.message || "Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+        toast.show(respond?.message || "Có lỗi xảy ra, vui lòng thử lại!");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.show("Không thể kết nối tới máy chủ. Vui lòng thử lại sau!");
+      toast.show("Lỗi hệ thống, vui lòng thử lại sau!");
     } finally {
       setIsLoading(false);
     }
@@ -107,15 +132,16 @@ const LoginScreen = () => {
 
         <View style={styles.header}>
           <Text style={styles.title}>Đăng nhập</Text>
-          <Text style={styles.subtitle}>Truy cập hệ thống CRMS bằng số điện thoại và mật khẩu của bạn.</Text>
+          {/* Cập nhật Subtitle  */}
+          <Text style={styles.subtitle}>Truy cập hệ thống My Beauty bằng số điện thoại và mật khẩu của bạn.</Text>
         </View>
 
         <Input
           placeholder="Số điện thoại"
           keyboardType="phone-pad"
-          rightIcon={{ type: "font-awesome", name: "phone", color: "#888" }}
           value={phone}
           onChangeText={setPhone}
+          disabled={isLoading}
           inputStyle={styles.inputText}
           containerStyle={styles.inputContainer}
         />
@@ -123,14 +149,14 @@ const LoginScreen = () => {
         <Input
           placeholder="Mật khẩu"
           secureTextEntry={!showPassword}
-          rightIcon={{
-            type: "font-awesome",
-            name: showPassword ? "eye" : "eye-slash",
-            color: "#888",
-            onPress: () => setShowPassword(!showPassword),
-          }}
+          rightIcon={
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Icon name={showPassword ? "eye" : "eye-slash"} type="font-awesome" color="#888" />
+            </TouchableOpacity>
+          }
           value={password}
           onChangeText={setPassword}
+          disabled={isLoading}
           inputStyle={styles.inputText}
           containerStyle={styles.inputContainer}
         />
@@ -142,16 +168,15 @@ const LoginScreen = () => {
             onPress={() => setRemember(!remember)}
             containerStyle={styles.checkbox}
             textStyle={styles.checkboxLabel}
+            disabled={isLoading}
           />
-          <TouchableOpacity>
-            <Text style={styles.linkDanger} onPress={() => navigation.navigate("ForgotPassword")}>
-              Quên mật khẩu?
-            </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+            <Text style={styles.linkDanger}>Quên mật khẩu?</Text>
           </TouchableOpacity>
         </View>
 
         <Button
-          title="Đăng nhập"
+          title={isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
           buttonStyle={styles.primaryBtn}
           containerStyle={styles.buttonContainer}
           onPress={handleSubmit}
@@ -172,20 +197,22 @@ const LoginScreen = () => {
           <Divider style={styles.line} />
         </View>
 
+        {/* Social Buttons aligned with Web UI */}
         <View style={styles.socialRow}>
           <Button
             icon={<Icon name="facebook" type="font-awesome" color="white" />}
             buttonStyle={[styles.socialBtn, { backgroundColor: "#1877F2" }]}
           />
           <Button
-            icon={<LogoGoogle width={34} height={34} />}
+            icon={<LogoGoogle width={24} height={24} />}
             buttonStyle={[styles.socialBtn, { backgroundColor: "#fff", borderWidth: 1, borderColor: "#E8E8E8" }]}
           />
           <Button icon={<Icon name="apple" type="font-awesome" color="white" />} buttonStyle={[styles.socialBtn, { backgroundColor: "#000" }]} />
         </View>
       </ScrollView>
 
-      <Text style={styles.footer}>© {new Date().getFullYear()} - CRMS</Text>
+      {/* Cập nhật Footer thương hiệu */}
+      <Text style={styles.footer}>© {new Date().getFullYear()} - My Beauty</Text>
     </View>
   );
 };
