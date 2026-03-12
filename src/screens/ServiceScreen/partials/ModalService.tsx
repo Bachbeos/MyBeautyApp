@@ -441,7 +441,7 @@ const ModalService: React.FC<ModalServiceProps> = ({ shown, type, item, onClose,
                   <Text>{featured === 1 ? "Có" : "Không"}</Text>
                 </View>
 
-                {isCombo === 1 && (
+                {/* {isCombo === 1 && (
                   <View style={[styles.comboContainer, { marginTop: 10 }]}>
                     <View style={styles.comboHeader}>
                       <Text style={styles.comboTitle}>📦 BẢNG GIÁ COMBO</Text>
@@ -516,7 +516,7 @@ const ModalService: React.FC<ModalServiceProps> = ({ shown, type, item, onClose,
                       ))
                     )}
                   </View>
-                )}
+                )} */}
 
                 <View style={styles.formGroup}>
                   {renderLabel("Giới thiệu", false)}

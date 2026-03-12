@@ -28,7 +28,7 @@ export default {
   },
 
   delete: (id: number, token: string) => {
-    return fetch(`${urlsApi.callHistory.delete}?id=${id}`, {
+    return fetch(`${urlsApi.callHistory.delete}/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
